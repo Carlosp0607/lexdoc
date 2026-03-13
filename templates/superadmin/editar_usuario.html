@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexDoc — Editar Usuario</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Raleway', sans-serif;
+            background: #f0f4f8;
+            color: #1a2738;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: #1a2f4e;
+            border-bottom: 3px solid #c9a84c;
+            padding: 16px 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar h1 {
+            font-family: 'Cinzel', serif;
+            color: #c9a84c;
+            font-size: 1.5rem;
+            letter-spacing: 4px;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid #a0b8d0;
+            color: #a0b8d0;
+            padding: 8px 18px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-back:hover {
+            border-color: #c9a84c;
+            color: #c9a84c;
+        }
+
+        .btn-logout {
+            background: transparent;
+            border: 1px solid #c9a84c;
+            color: #c9a84c;
+            padding: 8px 18px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #c9a84c;
+            color: #1a2f4e;
+        }
+
+        .content {
+            padding: 35px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .form-card {
+            background: #ffffff;
+            border: 1px solid #dce6f0;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 520px;
+        }
+
+        .form-title {
+            font-family: 'Cinzel', serif;
+            color: #1a2f4e;
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+        }
+
+        .form-subtitle {
+            color: #8899aa;
+            font-size: 0.82rem;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f4f8;
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            color: #5a7a9a;
+            font-size: 0.72rem;
+            letter-spacing: 2px;
+            margin-bottom: 7px;
+            text-transform: uppercase;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 11px 14px;
+            background: #f7fafd;
+            border: 1px solid #dce6f0;
+            border-radius: 6px;
+            color: #1a2738;
+            font-size: 0.9rem;
+            font-family: 'Raleway', sans-serif;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #c9a84c;
+            background: #ffffff;
+        }
+
+        .hint {
+            color: #aabbcc;
+            font-size: 0.75rem;
+            margin-top: 5px;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .btn-guardar {
+            padding: 12px;
+            background: #1a2f4e;
+            color: #c9a84c;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Cinzel', serif;
+        }
+
+        .btn-guardar:hover {
+            background: #c9a84c;
+            color: #1a2f4e;
+        }
+
+        .btn-cancelar {
+            padding: 12px;
+            background: transparent;
+            color: #8899aa;
+            border: 1px solid #dce6f0;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s;
+            font-family: 'Cinzel', serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-cancelar:hover {
+            border-color: #c9a84c;
+            color: #c9a84c;
+        }
+
+        .alert {
+            padding: 13px 18px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.88rem;
+        }
+
+        .alert-success { background: #e8f8f0; border: 1px solid #a9dfbf; color: #1e8449; }
+        .alert-error   { background: #fdedec; border: 1px solid #f5b7b1; color: #c0392b; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <h1>⚖ LEXDOC</h1>
+        <div class="navbar-right">
+            <a href="/superadmin/usuarios" class="btn-back">← VOLVER</a>
+            <a href="/logout" class="btn-logout">SALIR</a>
+        </div>
+    </nav>
+
+    <div class="content">
+        <div class="form-card">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <p class="form-title">EDITAR USUARIO</p>
+            <p class="form-subtitle">Modificando: {{ usuario['nombre'] }}</p>
+
+            <form method="POST">
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" name="nombre" 
+                           value="{{ usuario['nombre'] }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" name="email" 
+                           value="{{ usuario['email'] }}" required>
+                </div>
+                <div class="form-group">
+    <label>Nueva Contraseña</label>
+    <div style="position:relative;">
+        <input type="password" name="password" id="pass1"
+               placeholder="Dejar vacío para no cambiar"
+               style="padding-right:45px;">
+        <span onclick="togglePass('pass1', this)"
+              style="position:absolute; right:14px; top:50%;
+                     transform:translateY(-50%); cursor:pointer;
+                     font-size:1.1rem; opacity:0.4; user-select:none;">👁️</span>
+    </div>
+</div>
+                <div class="form-group">
+                    <label>Rol</label>
+                    <select name="rol">
+                        <option value="abogado" 
+                            {% if usuario['rol'] == 'abogado' %}selected{% endif %}>
+                            ⚖️ Abogado
+                        </option>
+                        <option value="jefe" 
+                            {% if usuario['rol'] == 'jefe' %}selected{% endif %}>
+                            👔 Jefe de Firma
+                        </option>
+                    </select>
+                </div>
+                <div class="btn-group">
+                    <a href="/superadmin/usuarios" class="btn-cancelar">CANCELAR</a>
+                    <button type="submit" class="btn-guardar">GUARDAR</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+    <script>
+    function togglePass(id, icon) {
+        const input = document.getElementById(id);
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.style.opacity = '1';
+        } else {
+            input.type = 'password';
+            icon.style.opacity = '0.4';
+        }
+    }
+</script>
+</body>
+</html>

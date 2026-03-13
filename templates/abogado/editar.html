@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexDoc — Editar Documento</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Raleway', sans-serif; background: #f0f4f8; color: #1a2738; min-height: 100vh; }
+        .navbar { background: #1a2f4e; border-bottom: 3px solid #c9a84c; padding: 16px 35px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.15); position: sticky; top: 0; z-index: 100; }
+        .navbar h1 { font-family: 'Cinzel', serif; color: #c9a84c; font-size: 1.5rem; letter-spacing: 4px; }
+        .navbar-right { display: flex; align-items: center; gap: 20px; }
+        .btn-back { background: transparent; border: 1px solid #a0b8d0; color: #a0b8d0; padding: 8px 18px; border-radius: 3px; font-size: 0.75rem; letter-spacing: 2px; text-decoration: none; transition: all 0.3s; }
+        .btn-back:hover { border-color: #c9a84c; color: #c9a84c; }
+        .btn-logout { background: transparent; border: 1px solid #c9a84c; color: #c9a84c; padding: 8px 18px; border-radius: 3px; font-size: 0.75rem; letter-spacing: 2px; text-decoration: none; transition: all 0.3s; }
+        .btn-logout:hover { background: #c9a84c; color: #1a2f4e; }
+        .content { padding: 35px; display: flex; justify-content: center; }
+        .form-card { background: #ffffff; border: 1px solid #dce6f0; border-radius: 10px; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); width: 100%; max-width: 600px; }
+        .form-title { font-family: 'Cinzel', serif; color: #1a2f4e; font-size: 0.9rem; letter-spacing: 3px; margin-bottom: 8px; }
+        .form-subtitle { color: #8899aa; font-size: 0.82rem; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #f0f4f8; }
+        .doc-info { background: #f7fafd; border: 1px solid #dce6f0; border-radius: 6px; padding: 15px; margin-bottom: 25px; display: flex; align-items: center; gap: 12px; }
+        .doc-icon { font-size: 1.5rem; }
+        .doc-nombre { font-size: 0.85rem; color: #1a2f4e; font-weight: 500; }
+        .doc-fecha { font-size: 0.75rem; color: #8899aa; margin-top: 3px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; color: #5a7a9a; font-size: 0.72rem; letter-spacing: 2px; margin-bottom: 7px; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 11px 14px; background: #f7fafd; border: 1px solid #dce6f0; border-radius: 6px; color: #1a2738; font-size: 0.9rem; font-family: 'Raleway', sans-serif; transition: border-color 0.3s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #c9a84c; background: #ffffff; }
+        textarea { resize: vertical; min-height: 100px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        /* ESTADOS */
+        .estados-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .estado-option { border: 2px solid #dce6f0; border-radius: 8px; padding: 15px; cursor: pointer; transition: all 0.3s; text-align: center; }
+        .estado-option input { display: none; }
+        .estado-option .estado-icon { font-size: 1.5rem; margin-bottom: 6px; display: block; }
+        .estado-option .estado-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 1px; }
+        .estado-option.pendiente:hover,
+        .estado-option.pendiente.selected { border-color: #f39c12; background: #fef9e7; }
+        .estado-option.pendiente .estado-label { color: #d68910; }
+        .estado-option.en_proceso:hover,
+        .estado-option.en_proceso.selected { border-color: #2471a3; background: #eaf4fb; }
+        .estado-option.en_proceso .estado-label { color: #2471a3; }
+        .estado-option.listo:hover,
+        .estado-option.listo.selected { border-color: #27ae60; background: #e8f8f0; }
+        .estado-option.listo .estado-label { color: #27ae60; }
+        .estado-option.requiere_revision:hover,
+        .estado-option.requiere_revision.selected { border-color: #c0392b; background: #fdedec; }
+        .estado-option.requiere_revision .estado-label { color: #c0392b; }
+
+        .comentario-box { background: #fffdf5; border: 1px solid #f9e79f; border-radius: 6px; padding: 15px; margin-bottom: 20px; }
+        .comentario-box .comentario-titulo { font-size: 0.72rem; color: #d68910; letter-spacing: 2px; margin-bottom: 8px; font-weight: 600; }
+        .comentario-box p { font-size: 0.85rem; color: #7d6608; font-style: italic; }
+
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+        .btn-guardar { padding: 13px; background: #1a2f4e; color: #c9a84c; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; letter-spacing: 2px; cursor: pointer; transition: all 0.3s; font-family: 'Cinzel', serif; }
+        .btn-guardar:hover { background: #c9a84c; color: #1a2f4e; }
+        .btn-cancelar { padding: 13px; background: transparent; color: #8899aa; border: 1px solid #dce6f0; border-radius: 6px; font-size: 0.8rem; letter-spacing: 2px; cursor: pointer; text-decoration: none; text-align: center; transition: all 0.3s; font-family: 'Cinzel', serif; display: flex; align-items: center; justify-content: center; }
+        .btn-cancelar:hover { border-color: #c9a84c; color: #c9a84c; }
+        .alert { padding: 13px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 0.88rem; }
+        .alert-success { background: #e8f8f0; border: 1px solid #a9dfbf; color: #1e8449; }
+        .alert-error { background: #fdedec; border: 1px solid #f5b7b1; color: #c0392b; }
+        .divider { border: none; border-top: 2px solid #f0f4f8; margin: 25px 0; }
+        .section-label { font-family: 'Cinzel', serif; color: #1a2f4e; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>⚖ LEXDOC</h1>
+        <div class="navbar-right">
+            <a href="/abogado" class="btn-back">← VOLVER</a>
+            <a href="/logout" class="btn-logout">SALIR</a>
+        </div>
+    </nav>
+
+    <div class="content">
+        <div class="form-card">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <p class="form-title">EDITAR DOCUMENTO</p>
+            <p class="form-subtitle">Actualiza el estado y deja tus comentarios</p>
+
+            <div class="doc-info">
+                <span class="doc-icon">📄</span>
+                <div>
+                    <div class="doc-nombre">{{ doc['archivo'] }}</div>
+                    <div class="doc-fecha">Subido el {{ doc['fecha_subida'] }}</div>
+                </div>
+            </div>
+
+            {% if doc['notas'] %}
+            <div class="comentario-box">
+                <div class="comentario-titulo">📋 INSTRUCCIONES DEL JEFE</div>
+                <p>{{ doc['notas'] }}</p>
+            </div>
+            {% endif %}
+
+            <form method="POST">
+
+                <!-- ESTADO -->
+                <hr class="divider">
+                <p class="section-label">ESTADO DEL CASO</p>
+                <div class="form-group">
+                    <div class="estados-grid">
+                        <label class="estado-option pendiente {% if doc['estado_caso'] == 'pendiente' %}selected{% endif %}"
+                               onclick="seleccionarEstado(this, 'pendiente')">
+                            <input type="radio" name="estado_caso" value="pendiente"
+                                   {% if doc['estado_caso'] == 'pendiente' %}checked{% endif %}>
+                            <span class="estado-icon">🟡</span>
+                            <span class="estado-label">PENDIENTE</span>
+                        </label>
+                        <label class="estado-option en_proceso {% if doc['estado_caso'] == 'en_proceso' %}selected{% endif %}"
+                               onclick="seleccionarEstado(this, 'en_proceso')">
+                            <input type="radio" name="estado_caso" value="en_proceso"
+                                   {% if doc['estado_caso'] == 'en_proceso' %}checked{% endif %}>
+                            <span class="estado-icon">🔵</span>
+                            <span class="estado-label">EN PROCESO</span>
+                        </label>
+                        <label class="estado-option listo {% if doc['estado_caso'] == 'listo' %}selected{% endif %}"
+                               onclick="seleccionarEstado(this, 'listo')">
+                            <input type="radio" name="estado_caso" value="listo"
+                                   {% if doc['estado_caso'] == 'listo' %}checked{% endif %}>
+                            <span class="estado-icon">🟢</span>
+                            <span class="estado-label">LISTO</span>
+                        </label>
+                        <label class="estado-option requiere_revision {% if doc['estado_caso'] == 'requiere_revision' %}selected{% endif %}"
+                               onclick="seleccionarEstado(this, 'requiere_revision')">
+                            <input type="radio" name="estado_caso" value="requiere_revision"
+                                   {% if doc['estado_caso'] == 'requiere_revision' %}checked{% endif %}>
+                            <span class="estado-icon">🔴</span>
+                            <span class="estado-label">REQUIERE REVISIÓN</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- COMENTARIO -->
+                <div class="form-group">
+                    <label>Tu Comentario para el Jefe</label>
+                    <textarea name="comentario_abogado"
+                        placeholder="Ej: Estoy revisando el contrato, falta firma del cliente...">{{ doc['comentario_abogado'] or '' }}</textarea>
+                </div>
+
+                <hr class="divider">
+                <p class="section-label">DATOS DEL DOCUMENTO</p>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Título</label>
+                        <input type="text" name="titulo"
+                               value="{{ doc['titulo'] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <input type="text" name="cliente"
+                               value="{{ doc['cliente'] }}" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Fecha de Vencimiento</label>
+                    <input type="date" name="fecha_vencimiento"
+                           value="{{ doc['fecha_vencimiento'] }}" required>
+                </div>
+
+                <div class="btn-group">
+                    <a href="/abogado" class="btn-cancelar">CANCELAR</a>
+                    <button type="submit" class="btn-guardar">GUARDAR CAMBIOS</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function seleccionarEstado(el, estado) {
+            document.querySelectorAll('.estado-option')
+                    .forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+    </script>
+</body>
+</html>

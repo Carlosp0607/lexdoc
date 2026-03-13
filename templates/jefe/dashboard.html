@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexDoc — Jefe de Firma</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Raleway', sans-serif; background: #f0f4f8; color: #1a2738; min-height: 100vh; }
+        .navbar { background: #1a2f4e; border-bottom: 3px solid #ffffff; padding: 16px 35px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.15); position: sticky; top: 0; z-index: 100; }
+        .navbar h1 { font-family: 'Cinzel', serif; color: #ffffff; font-size: 1.5rem; letter-spacing: 4px; }
+        .navbar-right { display: flex; align-items: center; gap: 20px; }
+        .navbar-right span { color: #ffffff; font-size: 0.85rem; letter-spacing: 1px; }
+        .btn-asignar { background: #ffffff; color: #1a2f4e; border: none; padding: 8px 20px; border-radius: 3px; font-size: 0.72rem; letter-spacing: 2px; text-decoration: none; transition: all 0.25s; font-family: 'Cinzel', serif; font-weight: 700; }
+.btn-asignar:hover { background: #dce6f0; color: #1a2f4e; }
+        .btn-logout { background: transparent; border: 1px solid #ffffff; color: #ffffff; padding: 8px 18px; border-radius: 3px; font-size: 0.75rem; letter-spacing: 2px; text-decoration: none; transition: all 0.3s; }
+        .btn-logout:hover { background: #ffffff; color: #1a2f4e; }
+        .content { padding: 35px; }
+        .page-title { font-family: 'Cinzel', serif; color: #1a2f4e; font-size: 0.9rem; letter-spacing: 3px; margin-bottom: 30px; padding-bottom: 12px; border-bottom: 2px solid #dce6f0; display: flex; align-items: center; gap: 10px; }
+        .page-title::before { content: ''; display: inline-block; width: 4px; height: 18px; background: linear-gradient(180deg, #c9a84c, #1a2f4e); border-radius: 2px; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 35px; }
+        .stat-card { background: #ffffff; border: 1px solid #dce6f0; border-radius: 10px; padding: 28px; text-align: center; position: relative; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+        .stat-card.total::before { background: linear-gradient(90deg, #1a2f4e, #4a7ab5); }
+        .stat-card.abogados::before { background: linear-gradient(90deg, #c9a84c, #e07b00); }
+        .stat-card.urgente::before { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+        .stat-card .number { font-family: 'Cinzel', serif; font-size: 3rem; font-weight: 600; }
+        .stat-card.total .number { color: #1a2f4e; }
+        .stat-card.abogados .number { color: #d68910; }
+        .stat-card.urgente .number { color: #c0392b; }
+        .stat-card .label { color: #8899aa; font-size: 0.72rem; letter-spacing: 2px; margin-top: 8px; text-transform: uppercase; }
+        .section-title { font-family: 'Cinzel', serif; color: #1a2f4e; font-size: 0.85rem; letter-spacing: 3px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .section-title::before { content: ''; display: inline-block; width: 4px; height: 16px; background: linear-gradient(180deg, #c9a84c, #1a2f4e); border-radius: 2px; }
+        .abogados-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 35px; }
+        .abogado-card { background: #ffffff; border: 1px solid #dce6f0; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: all 0.3s; }
+        .abogado-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); border-color: #c9a84c; }
+        .abogado-avatar { width: 45px; height: 45px; background: linear-gradient(135deg, #1a2f4e, #4a7ab5); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffffff; font-family: 'Cinzel', serif; font-size: 1rem; margin-bottom: 12px; }
+        .abogado-nombre { font-size: 0.9rem; color: #1a2f4e; font-weight: 500; margin-bottom: 4px; }
+        .abogado-email { font-size: 0.75rem; color: #8899aa; }
+        .table-wrapper { background: #ffffff; border: 1px solid #dce6f0; border-radius: 10px; overflow-x: auto; box-shadow: 0 2px 10px rgba(0,0,0,0.05); width: 100%; }
+        table { width: 100%; border-collapse: collapse; min-width: 1100px; table-layout: auto; }
+        th { background: #1a2f4e; color: #ffffff; padding: 14px 18px; text-align: left; font-size: 0.72rem; letter-spacing: 2px; font-family: 'Cinzel', serif; white-space: nowrap; }
+        td { padding: 13px 18px; border-bottom: 1px solid #eef2f7; color: #445566; font-size: 0.88rem; vertical-align: middle; white-space: nowrap; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f7fafd; color: #1a2f4e; }
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; letter-spacing: 1px; font-weight: 600; }
+        .badge-ok { background: #e8f8f0; color: #27ae60; border: 1px solid #a9dfbf; }
+        .badge-proximo { background: #fef9e7; color: #d68910; border: 1px solid #f9e79f; }
+        .badge-urgente { background: #fdedec; color: #c0392b; border: 1px solid #f5b7b1; }
+        .badge-vencido { background: #f5eef8; color: #7d3c98; border: 1px solid #d7bde2; }
+        .estado-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.68rem; letter-spacing: 1px; font-weight: 600; display: inline-block; white-space: nowrap; }
+        .estado-pendiente { background: #fef9e7; color: #d68910; border: 1px solid #f9e79f; }
+        .estado-en_proceso { background: #eaf4fb; color: #2471a3; border: 1px solid #aed6f1; }
+        .estado-listo { background: #e8f8f0; color: #27ae60; border: 1px solid #a9dfbf; }
+        .estado-requiere_revision { background: #fdedec; color: #c0392b; border: 1px solid #f5b7b1; }
+        .comentario-cell { font-size: 0.8rem; color: #7a8899; font-style: italic; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; position: relative; display: inline-block; }
+        .comentario-cell:hover::after { content: attr(data-tooltip); position: absolute; bottom: 125%; left: 0; background: #1a2f4e; color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 0.78rem; white-space: normal; max-width: 280px; min-width: 150px; z-index: 999; box-shadow: 0 4px 15px rgba(0,0,0,0.2); line-height: 1.5; }
+        .sin-comentario { color: #ccddee; font-size: 0.75rem; }
+        .btn-ver { padding: 6px 14px; background: transparent; color: #1a2f4e; border: 1px solid #b0c4d8; border-radius: 4px; font-size: 0.72rem; letter-spacing: 1px; cursor: pointer; text-decoration: none; transition: all 0.25s; white-space: nowrap; font-family: 'Cinzel', serif; }
+.btn-ver:hover { background: #1a2f4e; color: #c9a84c; border-color: #1a2f4e; }
+.btn-editar { padding: 6px 14px; background: transparent; color: #1a2f4e; border: 1px solid #b0c4d8; border-radius: 4px; font-size: 0.72rem; letter-spacing: 1px; cursor: pointer; text-decoration: none; transition: all 0.25s; white-space: nowrap; font-family: 'Cinzel', serif; }
+.btn-editar:hover { background: #1a2f4e; color: #c9a84c; border-color: #1a2f4e; }
+.btn-eliminar { padding: 6px 14px; background: transparent; color: #a93226; border: 1px solid #e8b4b0; border-radius: 4px; font-size: 0.72rem; letter-spacing: 1px; cursor: pointer; text-decoration: none; transition: all 0.25s; white-space: nowrap; font-family: 'Cinzel', serif; }
+.btn-eliminar:hover { background: #a93226; color: white; border-color: #a93226; }
+        .alert { padding: 13px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 0.88rem; }
+        .alert-success { background: #e8f8f0; border: 1px solid #a9dfbf; color: #1e8449; }
+        .alert-error { background: #fdedec; border: 1px solid #f5b7b1; color: #c0392b; }
+        .empty { text-align: center; padding: 40px; color: #aabbcc; font-size: 0.85rem; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>⚖ LEXDOC</h1>
+        <div class="navbar-right">
+            <span>👔 {{ nombre }}</span>
+            <a href="/jefe/asignar" class="btn-asignar">+ ASIGNAR CASO</a>
+            <a href="/logout" class="btn-logout">SALIR</a>
+        </div>
+    </nav>
+
+    <div class="content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <p class="page-title">PANEL DE CONTROL — JEFE DE FIRMA</p>
+
+        <div class="stats">
+            <div class="stat-card total">
+                <div class="number">{{ documentos|length }}</div>
+                <div class="label">DOCUMENTOS TOTALES</div>
+            </div>
+            <div class="stat-card abogados">
+                <div class="number">{{ abogados|length }}</div>
+                <div class="label">ABOGADOS ACTIVOS</div>
+            </div>
+            <div class="stat-card urgente">
+                <div class="number">
+                    {% set urgentes = [] %}
+                    {% for doc, estado, dias in documentos %}
+                        {% if estado == 'urgente' %}{% set _ = urgentes.append(1) %}{% endif %}
+                    {% endfor %}
+                    {{ urgentes|length }}
+                </div>
+                <div class="label">CASOS URGENTES</div>
+            </div>
+        </div>
+
+        {% if abogados %}
+        <p class="section-title">ABOGADOS DEL EQUIPO</p>
+        <div class="abogados-grid">
+            {% for a in abogados %}
+            <div class="abogado-card">
+                <div class="abogado-avatar">{{ a['nombre'][0] }}</div>
+                <div class="abogado-nombre">{{ a['nombre'] }}</div>
+                <div class="abogado-email">{{ a['email'] }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <p class="section-title">TODOS LOS DOCUMENTOS</p>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>DOCUMENTO</th>
+                        <th>CLIENTE</th>
+                        <th>ABOGADO</th>
+                        <th>VENCIMIENTO</th>
+                        <th>DÍAS</th>
+                        <th>VENCIMIENTO</th>
+                        <th>ESTADO CASO</th>
+                        <th>COMENTARIO</th>
+                        <th>ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if documentos %}
+                        {% for doc, estado, dias in documentos %}
+                        <tr>
+                            <td>{{ doc['titulo'] }}</td>
+                            <td>{{ doc['cliente'] }}</td>
+                            <td>{{ doc['abogado'] }}</td>
+                            <td>{{ doc['fecha_vencimiento'] }}</td>
+                            <td>{% if dias < 0 %}Vencido{% else %}{{ dias }} días{% endif %}</td>
+                            <td>
+                                <span class="badge badge-{{ estado }}">
+                                    {% if dias < 0 %}VENCIDO
+                                    {% elif estado == 'urgente' %}URGENTE
+                                    {% elif estado == 'proximo' %}PRÓXIMO
+                                    {% else %}AL DÍA
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if doc['estado_caso'] == 'pendiente' %}
+                                    <span class="estado-badge estado-pendiente">🟡 Pendiente</span>
+                                {% elif doc['estado_caso'] == 'en_proceso' %}
+                                    <span class="estado-badge estado-en_proceso">🔵 En Proceso</span>
+                                {% elif doc['estado_caso'] == 'listo' %}
+                                    <span class="estado-badge estado-listo">🟢 Listo</span>
+                                {% elif doc['estado_caso'] == 'requiere_revision' %}
+                                    <span class="estado-badge estado-requiere_revision">🔴 Requiere Revisión</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if doc['comentario_abogado'] %}
+                                    <span class="comentario-cell" data-tooltip="{{ doc['comentario_abogado'] }}">
+                                        💬 {{ doc['comentario_abogado'] }}
+                                    </span>
+                                {% else %}
+                                    <span class="sin-comentario">Sin comentarios</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display:flex; gap:6px;">
+                                    <a href="/descargar/{{ doc['archivo'] }}"
+                                       target="_blank" class="btn-ver">👁️ Ver Documento</a>
+                                    <a href="/jefe/editar/{{ doc['id'] }}"
+                                       class="btn-editar">✏️ Editar Caso</a>
+                                    <a href="/jefe/eliminar/{{ doc['id'] }}"
+                                       onclick="return confirm('¿Eliminar este caso?')"
+                                       class="btn-eliminar">🗑️ Eliminar Caso</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="9" class="empty">No hay documentos aún</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

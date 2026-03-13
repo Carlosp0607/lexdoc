@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexDoc — Iniciar Sesión</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: #0f1923;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: #1a2738;
+            border: 1px solid #c9a84c;
+            border-radius: 8px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .logo h1 {
+            color: #c9a84c;
+            font-size: 2rem;
+            letter-spacing: 3px;
+        }
+
+        .logo p {
+            color: #8899aa;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #c9a84c;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            background: #0f1923;
+            border: 1px solid #2a3f55;
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #c9a84c;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #c9a84c;
+            color: #0f1923;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        button:hover { background: #e0bf6a; }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .alert-error {
+            background: #3d1515;
+            border: 1px solid #c0392b;
+            color: #e74c3c;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #445566;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>⚖ LEXDOC</h1>
+            <p>SISTEMA DE GESTIÓN LEGAL</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <div class="form-group">
+                <label>Correo Electrónico</label>
+                <input type="email" name="email" 
+                       placeholder="tu@lexdoc.com" required>
+            </div>
+           <div class="form-group">
+    <label>Contraseña</label>
+    <div style="position:relative;">
+        <input type="password" name="password" id="pass1"
+               placeholder="••••••••" required
+               style="padding-right:45px;">
+        <span onclick="togglePass('pass1', this)"
+              style="position:absolute; right:14px; top:50%;
+                     transform:translateY(-50%); cursor:pointer;
+                     font-size:1.1rem; opacity:0.4; user-select:none;">👁️</span>
+    </div>
+</div>
+            <button type="submit">INGRESAR</button>
+        </form>
+
+        <div class="footer">
+            <p>Acceso restringido — Solo personal autorizado</p>
+        </div>
+    </div>
+    <script>
+    function togglePass(id, icon) {
+        const input = document.getElementById(id);
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.style.opacity = '1';
+        } else {
+            input.type = 'password';
+            icon.style.opacity = '0.4';
+        }
+    }
+</script>
+</body>
+</html>
