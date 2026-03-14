@@ -560,9 +560,6 @@ def reset_alertas():
     conn.close()
     return 'Reseteado OK'
 
-# ══════════════════════════════════════════
-#  ALERTAS POR EMAIL
-# ══════════════════════════════════════════
 
 # ══════════════════════════════════════════
 #  ALERTAS POR EMAIL
