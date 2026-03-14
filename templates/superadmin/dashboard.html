@@ -108,6 +108,7 @@
                         <th>ABOGADO</th>
                         <th>VENCIMIENTO</th>
                         <th>ESTADO</th>
+<th>ACCIONES</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -129,6 +130,19 @@
                                     <span class="badge badge-ok">AL DÍA</span>
                                 {% endif %}
                             </td>
+                            <td>
+                                <div style="display:flex; gap:8px;">
+                                    <a href="/descargar/{{ doc['archivo'] }}" target="_blank"
+                                       style="padding:6px 14px; background:transparent; color:#1a2f4e; border:1px solid #b0c4d8; border-radius:4px; font-size:0.72rem; letter-spacing:1px; text-decoration:none; font-family:'Cinzel',serif; white-space:nowrap;">
+                                        VER
+                                    </a>
+                                    <a href="/descargar/{{ doc['archivo'] }}" download
+                                       style="padding:6px 14px; background:transparent; color:#1a2f4e; border:1px solid #b0c4d8; border-radius:4px; font-size:0.72rem; letter-spacing:1px; text-decoration:none; font-family:'Cinzel',serif; white-space:nowrap;">
+                                        DESCARGAR
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
                         </tr>
                         {% endfor %}
                     {% else %}
