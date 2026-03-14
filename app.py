@@ -156,9 +156,18 @@ def superadmin_dashboard():
                JOIN usuarios u ON d.abogado_id = u.id''')
     documentos = c.fetchall()
     conn.close()
+
+    hoy = datetime.now().date()
+    docs_con_estado = []
+    for doc in documentos:
+        vencimiento = datetime.strptime(str(doc['fecha_vencimiento']), '%Y-%m-%d').date()
+        dias = (vencimiento - hoy).days
+        estado = 'vencido' if dias < 0 else 'urgente' if dias <= 1 else 'proximo' if dias <= 7 else 'ok'
+        docs_con_estado.append((doc, estado, dias))
+
     return render_template('superadmin/dashboard.html',
                          usuarios=usuarios,
-                         documentos=documentos,
+                         documentos=docs_con_estado,
                          nombre=session['usuario_nombre'])
 
 @app.route('/superadmin/usuarios')
@@ -610,6 +619,6 @@ def enviar_email(destinatario, nombre, titulo, cliente, vencimiento):
 if __name__ == '__main__':
     init_db()
     scheduler = BackgroundScheduler()
-    scheduler.add_job(enviar_alertas, 'interval', hours=24)
+    scheduler.add_job(enviar_alertas, 'interval', minutes=1)
     scheduler.start()
     app.run(debug=True)

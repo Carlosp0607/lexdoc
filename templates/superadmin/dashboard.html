@@ -364,14 +364,29 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% if documentos %}
-                        {% for doc in documentos %}
-                        <tr>
-                            <td>{{ doc['titulo'] }}</td>
-                            <td>{{ doc['cliente'] }}</td>
-                            <td>{{ doc['abogado'] }}</td>
-                            <td>{{ doc['fecha_vencimiento'] }}</td>
-                            <td><span class="badge badge-ok">AL DÍA</span></td>
+                   {% if documentos %}
+    {% for doc, estado, dias in documentos %}
+    <tr>
+        <td>{{ doc['titulo'] }}</td>
+        <td>{{ doc['cliente'] }}</td>
+        <td>{{ doc['abogado'] }}</td>
+        <td>{{ doc['fecha_vencimiento'] }}</td>
+        <td>
+            {% if estado == 'vencido' %}
+                <span class="badge badge-vencido">VENCIDO</span>
+            {% elif estado == 'urgente' %}
+                <span class="badge badge-urgente">VENCE MAÑANA</span>
+            {% elif estado == 'proximo' %}
+                <span class="badge badge-proximo">POR VENCER</span>
+            {% else %}
+                <span class="badge badge-ok">AL DÍA</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+{% else %}
+
+{% endfor %}
                         </tr>
                         {% endfor %}
                     {% else %}
