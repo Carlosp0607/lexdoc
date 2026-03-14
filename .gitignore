@@ -1,0 +1,4 @@
+lexdoc.db
+uploads/
+__pycache__/
+*.pyc

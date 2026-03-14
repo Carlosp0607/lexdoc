@@ -2,3 +2,4 @@ flask
 werkzeug
 apscheduler
 gunicorn
+psycopg2-binary
