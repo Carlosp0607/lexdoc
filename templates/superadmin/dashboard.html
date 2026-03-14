@@ -50,6 +50,23 @@
         .alert-success { background: #e8f8f0; border: 1px solid #a9dfbf; color: #1e8449; }
         .alert-error { background: #fdedec; border: 1px solid #f5b7b1; color: #c0392b; }
         .empty { text-align: center; padding: 40px; color: #aabbcc; font-size: 0.85rem; letter-spacing: 1px; }
+
+        @media (max-width: 768px) {
+            .navbar { padding: 12px 15px; }
+            .navbar h1 { font-size: 1.1rem; letter-spacing: 2px; }
+            .navbar-right span { display: none; }
+            .content { padding: 15px; }
+            .page-title { font-size: 0.75rem; letter-spacing: 1px; }
+            .stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-card { padding: 15px; }
+            .stat-card .number { font-size: 2rem; }
+            .menu-grid { grid-template-columns: 1fr; gap: 10px; }
+            .table-wrapper { overflow-x: auto; }
+            table { min-width: 600px; }
+            th { padding: 10px 10px; font-size: 0.65rem; }
+            td { padding: 10px 10px; font-size: 0.8rem; }
+        }
+    </style>
     </style>
 </head>
 <body>
