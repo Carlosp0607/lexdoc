@@ -616,7 +616,7 @@ def enviar_email(destinatario, nombre, titulo, cliente, vencimiento):
     msg['To'] = destinatario
 
     try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10) as smtp:
             smtp.login(EMAIL, PASSWORD)
             smtp.send_message(msg)
         print(f"✅ Email enviado a {destinatario}")
@@ -630,7 +630,7 @@ def enviar_email(destinatario, nombre, titulo, cliente, vencimiento):
 # ══════════════════════════════════════════
 init_db()
 scheduler = BackgroundScheduler()
-scheduler.add_job(enviar_alertas, 'interval', minutes=1)
+scheduler.add_job(enviar_alertas, 'interval', minutes=1, max_instances=1, coalesce=True)
 scheduler.start()
 
 if __name__ == '__main__':
