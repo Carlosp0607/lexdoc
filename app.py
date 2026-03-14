@@ -608,7 +608,6 @@ def enviar_email(destinatario, nombre, titulo, cliente, vencimiento):
         return True
     except Exception as e:
         print(f"❌ Error: {e}")
-        return False {e}")
         return False
 
 # ══════════════════════════════════════════
