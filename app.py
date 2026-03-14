@@ -624,10 +624,5 @@ Por favor toma las acciones necesarias a tiempo.
 # ══════════════════════════════════════════
 #  INICIAR
 # ══════════════════════════════════════════
-init_db()
-scheduler = BackgroundScheduler()
-scheduler.add_job(enviar_alertas, 'interval', minutes=1, max_instances=1, coalesce=True)
-scheduler.start()
-
 if __name__ == '__main__':
     app.run(debug=True)
