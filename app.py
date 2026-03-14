@@ -5,8 +5,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import psycopg2
 import psycopg2.extras
 import os
-import smtplib
-from email.mime.text import MIMEText
+import resend
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
@@ -551,6 +550,7 @@ def descargar(nombre_archivo):
         os.path.abspath(app.config['UPLOAD_FOLDER']),
         nombre_archivo
     )
+
 @app.route('/reset-alertas')
 def reset_alertas():
     conn = get_db()
@@ -559,7 +559,6 @@ def reset_alertas():
     conn.commit()
     conn.close()
     return 'Reseteado OK'
-
 
 # ══════════════════════════════════════════
 #  ALERTAS POR EMAIL
@@ -594,23 +593,13 @@ def enviar_alertas():
     conn.close()
 
 def enviar_email(destinatario, nombre, titulo, cliente, vencimiento):
-    import resend
-    resend.api_key = os.environ.get('RESEND_API_KEY', 're_XMT9tPmw_KdjDKNCYo6e1bM1KgLrgG3uc')
-
+    resend.api_key = "re_XMT9tPmw_KdjDKNCYo6e1bM1KgLrgG3uc"
     try:
         resend.Emails.send({
-            "from": "LexDoc <onboarding@resend.dev>",
-            "to": destinatario,
+            "from": "onboarding@resend.dev",
+            "to": [destinatario],
             "subject": f"⚠️ Documento por vencer: {titulo}",
-            "html": f"""
-                <h2>Alerta de vencimiento</h2>
-                <p>Hola <strong>{nombre}</strong>,</p>
-                <p>El documento <strong>{titulo}</strong> del cliente <strong>{cliente}</strong>
-                vence el <strong>{vencimiento}</strong>.</p>
-                <p>Por favor toma las acciones necesarias a tiempo.</p>
-                <br>
-                <p>— Sistema LexDoc</p>
-            """
+            "text": f"Hola {nombre},\n\nEl documento '{titulo}' del cliente {cliente} vence el {vencimiento}.\n\nPor favor toma las acciones necesarias.\n\n— Sistema LexDoc"
         })
         print(f"✅ Email enviado a {destinatario}")
         return True
@@ -621,5 +610,10 @@ def enviar_email(destinatario, nombre, titulo, cliente, vencimiento):
 # ══════════════════════════════════════════
 #  INICIAR
 # ══════════════════════════════════════════
+init_db()
+scheduler = BackgroundScheduler()
+scheduler.add_job(enviar_alertas, 'interval', minutes=1, max_instances=1, coalesce=True)
+scheduler.start()
+
 if __name__ == '__main__':
     app.run(debug=True)
