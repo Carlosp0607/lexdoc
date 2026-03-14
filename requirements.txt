@@ -3,3 +3,4 @@ werkzeug
 apscheduler
 gunicorn
 psycopg2-binary
+resend

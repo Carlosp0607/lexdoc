@@ -594,28 +594,27 @@ def enviar_alertas():
     conn.close()
 
 def enviar_email(destinatario, nombre, titulo, cliente, vencimiento):
-    EMAIL = "lexdoc.firma@gmail.com"
-    PASSWORD = "pzfhlakjinclkhif"
+    import resend
+    resend.api_key = "re_XMT9tPmw_KdjDKNCYo6e1bM1KgLrgG3uc"
 
-    mensaje = f"""
-    Hola {nombre},
+    params = {
+        "from": "LexDoc <onboarding@resend.dev>",
+        "to": [destinatario],
+        "subject": f"⚠️ Documento por vencer: {titulo}",
+        "text": f"""
+Hola {nombre},
 
-    El documento "{titulo}" del cliente {cliente}
-    vence el {vencimiento}.
+El documento "{titulo}" del cliente {cliente}
+vence el {vencimiento}.
 
-    Por favor toma las acciones necesarias a tiempo.
+Por favor toma las acciones necesarias a tiempo.
 
-    — Sistema LexDoc
-    """
-    msg = MIMEText(mensaje)
-    msg['Subject'] = f'⚠️ Documento por vencer: {titulo}'
-    msg['From'] = EMAIL
-    msg['To'] = destinatario
+— Sistema LexDoc
+        """
+    }
 
     try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10) as smtp:
-            smtp.login(EMAIL, PASSWORD)
-            smtp.send_message(msg)
+        resend.Emails.send(params)
         print(f"✅ Email enviado a {destinatario}")
         return True
     except Exception as e:
