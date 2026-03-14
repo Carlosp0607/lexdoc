@@ -249,6 +249,46 @@ def editar_usuario(id):
     return render_template('superadmin/editar_usuario.html',
                          usuario=usuario,
                          nombre=session['usuario_nombre'])
+@app.route('/superadmin/cambiar_password', methods=['GET', 'POST'])
+@login_requerido(['superadmin'])
+def cambiar_password():
+    if request.method == 'POST':
+        password_actual = request.form.get('password_actual')
+        password_nueva = request.form.get('password_nueva')
+        password_confirmar = request.form.get('password_confirmar')
+
+        conn = get_db()
+        admin = conn.execute(
+            "SELECT * FROM usuarios WHERE id = ?",
+            (session['usuario_id'],)
+        ).fetchone()
+
+        if not check_password_hash(admin['password'], password_actual):
+            flash('La contraseña actual es incorrecta', 'error')
+            conn.close()
+            return redirect(url_for('cambiar_password'))
+
+        if password_nueva != password_confirmar:
+            flash('Las contraseñas nuevas no coinciden', 'error')
+            conn.close()
+            return redirect(url_for('cambiar_password'))
+
+        if len(password_nueva) < 6:
+            flash('La contraseña debe tener mínimo 6 caracteres', 'error')
+            conn.close()
+            return redirect(url_for('cambiar_password'))
+
+        conn.execute(
+            "UPDATE usuarios SET password = ? WHERE id = ?",
+            (generate_password_hash(password_nueva), session['usuario_id'])
+        )
+        conn.commit()
+        conn.close()
+        flash('Contraseña actualizada correctamente', 'success')
+        return redirect(url_for('superadmin_dashboard'))
+
+    return render_template('superadmin/cambiar_password.html',
+                         nombre=session['usuario_nombre'])
 
 # ══════════════════════════════════════════
 #  JEFE DE FIRMA
