@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LexDoc — Cambiar Contraseña</title>
+    <title>LexDoc — Mi Perfil</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -11,25 +11,26 @@
         .navbar { background: #1a2f4e; border-bottom: 3px solid #ffffff; padding: 16px 35px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.15); position: sticky; top: 0; z-index: 100; }
         .navbar h1 { font-family: 'Cinzel', serif; color: #ffffff; font-size: 1.5rem; letter-spacing: 4px; }
         .navbar-right { display: flex; align-items: center; gap: 20px; }
-        .btn-back { background: transparent; border: 1px solid #ffffff; color: #ffffff; padding: 8px 18px; border-radius: 3px; font-size: 0.75rem; letter-spacing: 2px; text-decoration: none; transition: all 0.3s; font-family: 'Cinzel', serif; }
+        .btn-back { background: transparent; border: 1px solid #ffffff; color: #ffffff; padding: 8px 18px; border-radius: 3px; font-size: 0.75rem; letter-spacing: 2px; text-decoration: none; transition: all 0.25s; font-family: 'Cinzel', serif; }
         .btn-back:hover { background: #ffffff; color: #1a2f4e; }
-        .btn-logout { background: transparent; border: 1px solid #ffffff; color: #ffffff; padding: 8px 18px; border-radius: 3px; font-size: 0.75rem; letter-spacing: 2px; text-decoration: none; transition: all 0.3s; font-family: 'Cinzel', serif; }
+        .btn-logout { background: transparent; border: 1px solid #ffffff; color: #ffffff; padding: 8px 18px; border-radius: 3px; font-size: 0.75rem; letter-spacing: 2px; text-decoration: none; transition: all 0.25s; font-family: 'Cinzel', serif; }
         .btn-logout:hover { background: #ffffff; color: #1a2f4e; }
         .content { padding: 35px; display: flex; justify-content: center; }
         .form-card { background: #ffffff; border: 1px solid #dce6f0; border-radius: 10px; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); width: 100%; max-width: 480px; }
-        .form-title { font-family: 'Cinzel', serif; color: #1a2f4e; font-size: 0.9rem; letter-spacing: 3px; margin-bottom: 8px; }
-        .form-subtitle { color: #8899aa; font-size: 0.82rem; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #f0f4f8; }
+        .avatar { width: 70px; height: 70px; background: linear-gradient(135deg, #1a2f4e, #4a7ab5); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffffff; font-family: 'Cinzel', serif; font-size: 1.8rem; margin: 0 auto 20px; }
+        .form-title { font-family: 'Cinzel', serif; color: #1a2f4e; font-size: 0.9rem; letter-spacing: 3px; margin-bottom: 8px; text-align: center; }
+        .form-subtitle { color: #8899aa; font-size: 0.82rem; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #f0f4f8; text-align: center; }
         .form-group { margin-bottom: 20px; }
         label { display: block; color: #5a7a9a; font-size: 0.72rem; letter-spacing: 2px; margin-bottom: 7px; text-transform: uppercase; }
-        .pass-wrapper { position: relative; }
-        .pass-wrapper input { width: 100%; padding: 11px 45px 11px 14px; background: #f7fafd; border: 1px solid #dce6f0; border-radius: 6px; color: #1a2738; font-size: 0.9rem; font-family: 'Raleway', sans-serif; transition: border-color 0.3s; }
-        .pass-wrapper input:focus { outline: none; border-color: #c9a84c; background: #ffffff; }
-        .toggle-pass { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.1rem; opacity: 0.4; user-select: none; }
+        input { width: 100%; padding: 11px 14px; background: #f7fafd; border: 1px solid #dce6f0; border-radius: 6px; color: #1a2738; font-size: 0.9rem; font-family: 'Raleway', sans-serif; transition: border-color 0.3s; }
+        input:focus { outline: none; border-color: #c9a84c; background: #ffffff; }
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
         .btn-guardar { padding: 13px; background: #1a2f4e; color: #ffffff; border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 600; letter-spacing: 2px; cursor: pointer; transition: all 0.3s; font-family: 'Cinzel', serif; }
         .btn-guardar:hover { background: #c9a84c; color: #1a2f4e; }
         .btn-cancelar { padding: 13px; background: transparent; color: #8899aa; border: 1px solid #dce6f0; border-radius: 6px; font-size: 0.8rem; letter-spacing: 2px; cursor: pointer; text-decoration: none; text-align: center; transition: all 0.3s; font-family: 'Cinzel', serif; display: flex; align-items: center; justify-content: center; }
         .btn-cancelar:hover { border-color: #1a2f4e; color: #1a2f4e; }
+        .btn-password { display: block; text-align: center; margin-top: 15px; padding: 10px; background: transparent; color: #8899aa; border: 1px solid #dce6f0; border-radius: 6px; font-size: 0.75rem; letter-spacing: 2px; text-decoration: none; transition: all 0.3s; font-family: 'Cinzel', serif; }
+        .btn-password:hover { border-color: #1a2f4e; color: #1a2f4e; }
         .alert { padding: 13px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 0.88rem; }
         .alert-success { background: #e8f8f0; border: 1px solid #a9dfbf; color: #1e8449; }
         .alert-error { background: #fdedec; border: 1px solid #f5b7b1; color: #c0392b; }
@@ -55,59 +56,33 @@
                 {% endif %}
             {% endwith %}
 
-            <p class="form-title">CAMBIAR CONTRASEÑA</p>
-            <p class="form-subtitle">Actualiza tu contraseña de acceso</p>
+            <div class="avatar">{{ admin['nombre'][0] }}</div>
+            <p class="form-title">MI PERFIL</p>
+            <p class="form-subtitle">Super Administrador</p>
 
             <form method="POST">
                 <div class="form-group">
-                    <label>Contraseña Actual</label>
-                    <div class="pass-wrapper">
-                        <input type="password" name="password_actual"
-                               id="pass1" placeholder="••••••••" required>
-                        <span class="toggle-pass"
-                              onclick="togglePass('pass1', this)">👁️</span>
-                    </div>
+                    <label>Nombre</label>
+                    <input type="text" name="nombre"
+                           value="{{ admin['nombre'] }}" required>
                 </div>
-
                 <div class="form-group">
-                    <label>Contraseña Nueva</label>
-                    <div class="pass-wrapper">
-                        <input type="password" name="password_nueva"
-                               id="pass2" placeholder="Mínimo 8 caracteres" required>
-                        <span class="toggle-pass"
-                              onclick="togglePass('pass2', this)">👁️</span>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Confirmar Contraseña Nueva</label>
-                    <div class="pass-wrapper">
-                        <input type="password" name="password_confirmar"
-                               id="pass3" placeholder="Repite la contraseña" required>
-                        <span class="toggle-pass"
-                              onclick="togglePass('pass3', this)">👁️</span>
-                    </div>
+                    <label>Correo Electrónico</label>
+                    <input type="email" name="email"
+                           value="{{ admin['email'] }}" required>
                 </div>
 
                 <div class="btn-group">
                     <a href="/superadmin" class="btn-cancelar">CANCELAR</a>
-                    <button type="submit" class="btn-guardar">ACTUALIZAR</button>
+                    <button type="submit" class="btn-guardar">GUARDAR</button>
                 </div>
             </form>
+
+            <a href="/superadmin/cambiar_password" class="btn-password">
+                🔑 CAMBIAR CONTRASEÑA
+            </a>
+
         </div>
     </div>
-
-    <script>
-        function togglePass(id, icon) {
-            const input = document.getElementById(id);
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.style.opacity = '1';
-            } else {
-                input.type = 'password';
-                icon.style.opacity = '0.4';
-            }
-        }
-    </script>
 </body>
 </html>

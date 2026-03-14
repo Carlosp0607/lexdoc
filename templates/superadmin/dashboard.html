@@ -306,8 +306,8 @@
         <h1>⚖ LEXDOC</h1>
         <div class="navbar-right">
             <span>👑 {{ nombre }}</span>
-            <a href="/superadmin/usuarios" class="btn-settings">⚙️</a>
-<a href="/superadmin/cambiar_password" class="btn-settings">🔑</a>
+            <a href="/superadmin/usuarios" class="btn-settings" style="font-size: 1.3rem;">⚙️</a>
+<a href="/superadmin/perfil" style="width:32px; height:32px; background: #ffffff; border-radius: 50%; display:inline-flex; align-items:center; justify-content:center; color:#1a2f4e; font-family:'Cinzel',serif; font-size:0.85rem; text-decoration:none; font-weight:600; transition: all 0.3s;">{{ nombre[0] }}</a>
             <a href="/logout" class="btn-logout">SALIR</a>
         </div>
     </nav>
@@ -322,7 +322,7 @@
             {% endif %}
         {% endwith %}
 
-        <p class="page-title">PANEL DE CONTROL — SUPER ADMINISTRADOR</p>
+        <p class="page-title">PANEL DE CONTROL — ADMINISTRADOR GENERAL</p>
 
         <!-- STATS -->
         <div class="stats">

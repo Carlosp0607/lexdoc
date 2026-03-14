@@ -249,6 +249,34 @@ def editar_usuario(id):
     return render_template('superadmin/editar_usuario.html',
                          usuario=usuario,
                          nombre=session['usuario_nombre'])
+@app.route('/superadmin/perfil', methods=['GET', 'POST'])
+@login_requerido(['superadmin'])
+def superadmin_perfil():
+    conn = get_db()
+    if request.method == 'POST':
+        nombre = request.form.get('nombre')
+        email = request.form.get('email')
+        try:
+            conn.execute(
+                "UPDATE usuarios SET nombre=?, email=? WHERE id=?",
+                (nombre, email, session['usuario_id'])
+            )
+            conn.commit()
+            session['usuario_nombre'] = nombre
+            flash('Perfil actualizado correctamente', 'success')
+        except:
+            flash('El email ya está en uso', 'error')
+        conn.close()
+        return redirect(url_for('superadmin_perfil'))
+
+    admin = conn.execute(
+        "SELECT * FROM usuarios WHERE id = ?",
+        (session['usuario_id'],)
+    ).fetchone()
+    conn.close()
+    return render_template('superadmin/perfil.html',
+                         admin=admin,
+                         nombre=session['usuario_nombre'])
 @app.route('/superadmin/cambiar_password', methods=['GET', 'POST'])
 @login_requerido(['superadmin'])
 def cambiar_password():
