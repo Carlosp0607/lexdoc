@@ -616,9 +616,10 @@ def enviar_email(destinatario, nombre, titulo, cliente, vencimiento):
 # ══════════════════════════════════════════
 #  INICIAR
 # ══════════════════════════════════════════
+init_db()
+scheduler = BackgroundScheduler()
+scheduler.add_job(enviar_alertas, 'interval', minutes=1)
+scheduler.start()
+
 if __name__ == '__main__':
-    init_db()
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(enviar_alertas, 'interval', minutes=1)
-    scheduler.start()
     app.run(debug=True)
