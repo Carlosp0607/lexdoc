@@ -595,14 +595,22 @@ def enviar_alertas():
 
 def enviar_email(destinatario, nombre, titulo, cliente, vencimiento):
     import resend
-    resend.api_key = "re_XMT9tPmw_KdjDKNCYo6e1bM1KgLrgG3uc"
+    resend.api_key = os.environ.get('RESEND_API_KEY', 're_XMT9tPmw_KdjDKNCYo6e1bM1KgLrgG3uc')
 
     try:
         resend.Emails.send({
-            "from": "onboarding@resend.dev",
-            "to": [destinatario],
+            "from": "LexDoc <onboarding@resend.dev>",
+            "to": destinatario,
             "subject": f"⚠️ Documento por vencer: {titulo}",
-            "text": f"Hola {nombre},\n\nEl documento '{titulo}' del cliente {cliente} vence el {vencimiento}.\n\nPor favor toma las acciones necesarias.\n\n— Sistema LexDoc"
+            "html": f"""
+                <h2>Alerta de vencimiento</h2>
+                <p>Hola <strong>{nombre}</strong>,</p>
+                <p>El documento <strong>{titulo}</strong> del cliente <strong>{cliente}</strong>
+                vence el <strong>{vencimiento}</strong>.</p>
+                <p>Por favor toma las acciones necesarias a tiempo.</p>
+                <br>
+                <p>— Sistema LexDoc</p>
+            """
         })
         print(f"✅ Email enviado a {destinatario}")
         return True
