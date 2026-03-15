@@ -517,16 +517,16 @@ def abogado_editar(id):
         titulo = request.form['titulo']
         cliente = request.form['cliente']
         fecha_vencimiento = request.form['fecha_vencimiento']
-        notas = request.form.get('notas', '')
-        comentario = request.form.get('comentario_abogado', '')
+       comentario = request.form.get('comentario_abogado', '')
         estado_caso = request.form.get('estado_caso', 'pendiente')
 
         c.execute(
             '''UPDATE documentos SET titulo=%s, cliente=%s,
-               fecha_vencimiento=%s, notas=%s, comentario_abogado=%s,
+               fecha_vencimiento=%s, comentario_abogado=%s,
                estado_caso=%s, fecha_actualizacion=%s WHERE id=%s''',
-            (titulo, cliente, fecha_vencimiento, notas,
+            (titulo, cliente, fecha_vencimiento,
              comentario, estado_caso, datetime.now(), id)
+        )
         )
         conn.commit()
         conn.close()
