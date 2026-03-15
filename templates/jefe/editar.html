@@ -91,10 +91,17 @@
                            value="{{ doc['fecha_vencimiento'] }}" required>
                 </div>
 
-                <div class="form-group">
-                    <label>Notas adicionales</label>
-                    <textarea name="notas">{{ doc['notas'] or '' }}</textarea>
-                </div>
+                {% if doc['comentario_abogado'] %}
+<div style="background:#fffdf5; border:1px solid #f9e79f; border-radius:6px; padding:15px; margin-bottom:20px;">
+    <div style="font-size:0.72rem; color:#d68910; letter-spacing:2px; margin-bottom:8px; font-weight:600;">💬 COMENTARIO DEL ABOGADO</div>
+    <p style="font-size:0.85rem; color:#7d6608; font-style:italic;">{{ doc['comentario_abogado'] }}</p>
+</div>
+{% endif %}
+
+<div class="form-group">
+    <label>Instrucciones / Nota para el Abogado</label>
+    <textarea name="notas" placeholder="Escribe instrucciones o notas para el abogado...">{{ doc['notas'] or '' }}</textarea>
+</div>
 
                 <div class="btn-group">
                     <a href="/jefe" class="btn-cancelar">CANCELAR</a>
