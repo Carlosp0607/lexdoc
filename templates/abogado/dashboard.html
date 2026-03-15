@@ -104,14 +104,15 @@
         <div class="table-wrapper">
             <table>
                 <thead>
-                    <tr>
-                        <th>DOCUMENTO</th>
-                        <th>CLIENTE</th>
-                        <th>VENCIMIENTO</th>
-                        <th>DÍAS</th>
-                        <th>ESTADO</th>
-                        <th>ACCIÓN</th>
-                    </tr>
+                   <tr>
+    <th>DOCUMENTO</th>
+    <th>CLIENTE</th>
+    <th>VENCIMIENTO</th>
+    <th>DÍAS</th>
+    <th>ESTADO</th>
+    <th>NOTA DEL JEFE</th>
+    <th>ACCIÓN</th>
+</tr>
                 </thead>
                 <tbody>
                     {% if documentos %}
@@ -130,6 +131,15 @@
                                     {% endif %}
                                 </span>
                             </td>
+                            <td>
+    {% if doc['notas'] %}
+        <span style="font-size:0.8rem; color:#7d6608; font-style:italic;">
+            📋 {{ doc['notas'] }}
+        </span>
+    {% else %}
+        <span style="font-size:0.75rem; color:#ccddee;">Sin notas</span>
+    {% endif %}
+</td>
                             <td>
     <div style="display:flex; gap:6px; flex-wrap:nowrap;">
         <a href="/descargar/{{ doc['archivo'] }}"
@@ -152,7 +162,7 @@
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="6" class="empty">
+                            <td colspan="7" class="empty">
                                 No tienes documentos asignados aún
                             </td>
                         </tr>
