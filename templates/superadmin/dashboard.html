@@ -66,7 +66,24 @@
             th { padding: 10px 10px; font-size: 0.65rem; }
             td { padding: 10px 10px; font-size: 0.8rem; }
         }
-    </style>
+        /* ── RESPONSIVE MÓVIL ── */
+@media (max-width: 768px) {
+    .navbar { padding: 12px 15px; flex-wrap: wrap; gap: 10px; }
+    .navbar h1 { font-size: 1.1rem; letter-spacing: 2px; }
+    .navbar-right { gap: 10px; }
+    .navbar-right span { font-size: 0.75rem; }
+    .btn-logout { padding: 6px 12px; font-size: 0.65rem; }
+    .content { padding: 15px; }
+    .page-title { font-size: 0.75rem; letter-spacing: 1px; }
+    .stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat-card { padding: 18px; }
+    .stat-card .number { font-size: 2rem; }
+    .menu-grid { grid-template-columns: 1fr; gap: 10px; }
+    .menu-card { padding: 20px; }
+    .table-wrapper { overflow-x: auto; }
+    table { min-width: 500px; }
+}
+  
     </style>
 </head>
 <body>

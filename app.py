@@ -16,8 +16,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # ══════════════════════════════════════════
 #  BASE DE DATOS
 # ══════════════════════════════════════════
-DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://lexdoc_db_user:DSKF0kr3rKIIfHP6Q2hyQZENYM2KuDou@dpg-d6qpev450q8c73bmu5d0-a.oregon-postgres.render.com/lexdoc_db')
-
+DATABASE_URL = os.environ.get('DATABASE_URL')
 def get_db():
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
     return conn
