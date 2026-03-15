@@ -44,7 +44,7 @@
         .badge-proximo { background: #fef9e7; color: #d68910; border: 1px solid #f9e79f; }
         .badge-urgente { background: #fdedec; color: #c0392b; border: 1px solid #f5b7b1; }
         .badge-vencido { background: #f5eef8; color: #7d3c98; border: 1px solid #d7bde2; }
-        .btn-editar { padding: 5px 12px; background: #eaf4fb; color: #2471a3; border: 1px solid #aed6f1; border-radius: 4px; font-size: 0.75rem; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+        .btn-editar { padding: 5px 10px; background: #eaf4fb; color: #2471a3; border: 1px solid #aed6f1; border-radius: 4px; font-size: 0.7rem; cursor: pointer; text-decoration: none; transition: all 0.2s; white-space: nowrap; }
         .btn-editar:hover { background: #2471a3; color: white; }
         .alert { padding: 13px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 0.88rem; }
         .alert-success { background: #e8f8f0; border: 1px solid #a9dfbf; color: #1e8449; }
@@ -131,22 +131,22 @@
                                 </span>
                             </td>
                             <td>
-   <a href="/descargar/{{ doc['archivo'] }}"
-   target="_blank"
-   style="padding:6px 14px; background:transparent; color:#1a2f4e; border:1px solid #b0c4d8; border-radius:4px; font-size:0.72rem; letter-spacing:1px; text-decoration:none; font-family:'Cinzel',serif; white-space:nowrap;">
-     👁️ VER DOCUMENTO
-</a>
-
-<a href="/abogado/editar/{{ doc['id'] }}"
-   style="padding:6px 14px; background:transparent; color:#1a2f4e; border:1px solid #b0c4d8; border-radius:4px; font-size:0.72rem; letter-spacing:1px; text-decoration:none; font-family:'Cinzel',serif; white-space:nowrap;">
-     ✏️ EDITAR DOCUMENTO
-</a>
-<a href="/descargar/{{ doc['archivo'] }}"
-   download
-   style="padding:6px 14px; background:transparent; color:#1a2f4e; border:1px solid #b0c4d8; border-radius:4px; font-size:0.72rem; letter-spacing:1px; text-decoration:none; font-family:'Cinzel',serif; white-space:nowrap;">
-      📥 DESCARGAR DOCUMENTO
-</a>
-
+    <div style="display:flex; gap:6px; flex-wrap:nowrap;">
+        <a href="/descargar/{{ doc['archivo'] }}"
+           target="_blank"
+           style="padding:6px 14px; background:transparent; color:#1a2f4e; border:1px solid #b0c4d8; border-radius:4px; font-size:0.72rem; letter-spacing:1px; text-decoration:none; font-family:'Cinzel',serif; white-space:nowrap;">
+            👁️ Ver Documento
+        </a>
+        <a href="/abogado/editar/{{ doc['id'] }}"
+           style="padding:6px 14px; background:transparent; color:#1a2f4e; border:1px solid #b0c4d8; border-radius:4px; font-size:0.72rem; letter-spacing:1px; text-decoration:none; font-family:'Cinzel',serif; white-space:nowrap;">
+            ✏️ Editar Documento
+        </a>
+        <a href="/descargar/{{ doc['archivo'] }}"
+           download
+           style="padding:6px 14px; background:transparent; color:#1a2f4e; border:1px solid #b0c4d8; border-radius:4px; font-size:0.72rem; letter-spacing:1px; text-decoration:none; font-family:'Cinzel',serif; white-space:nowrap;">
+            📥 Descargar Documento
+        </a>
+    </div>
 </td>
                         </tr>
                         {% endfor %}
