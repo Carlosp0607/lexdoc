@@ -9,7 +9,7 @@ import resend
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
-app.secret_key = 'lexdoc-clave-secreta-2024'
+app.secret_key = os.environ.get('SECRET_KEY', 'lexdoc-clave-secreta-2024')
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -517,7 +517,7 @@ def abogado_editar(id):
         titulo = request.form['titulo']
         cliente = request.form['cliente']
         fecha_vencimiento = request.form['fecha_vencimiento']
-       comentario = request.form.get('comentario_abogado', '')
+        comentario = request.form.get('comentario_abogado', '')
         estado_caso = request.form.get('estado_caso', 'pendiente')
 
         c.execute(
@@ -526,7 +526,6 @@ def abogado_editar(id):
                estado_caso=%s, fecha_actualizacion=%s WHERE id=%s''',
             (titulo, cliente, fecha_vencimiento,
              comentario, estado_caso, datetime.now(), id)
-        )
         )
         conn.commit()
         conn.close()
@@ -592,7 +591,7 @@ def enviar_alertas():
     conn.close()
 
 def enviar_email(destinatario, nombre, titulo, cliente, vencimiento):
-    resend.api_key = "re_XMT9tPmw_KdjDKNCYo6e1bM1KgLrgG3uc"
+    resend.api_key = os.environ.get('RESEND_API_KEY')
     try:
         resend.Emails.send({
             "from": "onboarding@resend.dev",
