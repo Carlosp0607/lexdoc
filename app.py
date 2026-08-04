@@ -9,7 +9,7 @@ import resend
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'lexdoc-clave-secreta-2024')
+app.secret_key = os.environ.get('SECRET_KEY')
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
