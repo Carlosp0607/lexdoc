@@ -68,6 +68,18 @@ def init_db():
     except:
         conn.rollback()
 
+    # ── Usuarios demo para acceso de invitado ──
+    usuarios_demo = [
+        ('Jefe Demo', 'jefe.demo@lexdoc.com', 'demo123', 'jefe'),
+        ('Abogado Demo', 'abogado.demo@lexdoc.com', 'demo123', 'abogado'),
+    ]
+    for nombre, email, pw, rol in usuarios_demo:
+        try:
+            c.execute("INSERT INTO usuarios (nombre, email, password, rol) VALUES (%s, %s, %s, %s)",
+                (nombre, email, generate_password_hash(pw), rol))
+        except:
+            conn.rollback()
+
     conn.commit()
     conn.close()
 
@@ -87,6 +99,13 @@ def login_requerido(roles_permitidos):
             return f(*args, **kwargs)
         return wrapper
     return decorador
+
+def bloqueado_en_demo():
+    """Devuelve True y muestra un aviso si el usuario actual es una cuenta demo."""
+    if session.get('demo'):
+        flash('Esta acción está deshabilitada en modo demo', 'error')
+        return True
+    return False
 
 # ══════════════════════════════════════════
 #  LOGIN / LOGOUT
@@ -118,6 +137,34 @@ def login():
             flash('Email o contraseña incorrectos', 'error')
 
     return render_template('login.html')
+
+# ── Acceso rápido como invitado (sin contraseña) ──
+DEMO_EMAILS = {
+    'superadmin': 'admin@lexdoc.com',
+    'jefe': 'jefe.demo@lexdoc.com',
+    'abogado': 'abogado.demo@lexdoc.com',
+}
+
+@app.route('/invitado/<rol>')
+def entrar_invitado(rol):
+    if rol not in DEMO_EMAILS:
+        return redirect(url_for('login'))
+
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT * FROM usuarios WHERE email = %s", (DEMO_EMAILS[rol],))
+    usuario = c.fetchone()
+    conn.close()
+
+    if usuario:
+        session['usuario_id'] = usuario['id']
+        session['usuario_nombre'] = usuario['nombre']
+        session['rol'] = usuario['rol']
+        session['demo'] = True
+        return redirect(url_for('dashboard'))
+
+    flash('Cuenta demo no disponible', 'error')
+    return redirect(url_for('login'))
 
 @app.route('/logout')
 def logout():
@@ -183,6 +230,8 @@ def superadmin_usuarios():
 @app.route('/superadmin/crear_usuario', methods=['POST'])
 @login_requerido(['superadmin'])
 def crear_usuario():
+    if bloqueado_en_demo():
+        return redirect(url_for('superadmin_usuarios'))
     nombre = request.form['nombre']
     email = request.form['email']
     password = request.form['password']
@@ -204,6 +253,8 @@ def crear_usuario():
 @app.route('/superadmin/eliminar_usuario/<int:id>')
 @login_requerido(['superadmin'])
 def eliminar_usuario(id):
+    if bloqueado_en_demo():
+        return redirect(url_for('superadmin_usuarios'))
     conn = get_db()
     c = conn.cursor()
     c.execute("DELETE FROM usuarios WHERE id = %s", (id,))
@@ -218,6 +269,9 @@ def editar_usuario(id):
     conn = get_db()
     c = conn.cursor()
     if request.method == 'POST':
+        if bloqueado_en_demo():
+            conn.close()
+            return redirect(url_for('superadmin_usuarios'))
         nombre = request.form['nombre']
         email = request.form['email']
         rol = request.form['rol']
@@ -250,6 +304,9 @@ def superadmin_perfil():
     conn = get_db()
     c = conn.cursor()
     if request.method == 'POST':
+        if bloqueado_en_demo():
+            conn.close()
+            return redirect(url_for('superadmin_perfil'))
         nombre = request.form.get('nombre')
         email = request.form.get('email')
         try:
@@ -276,6 +333,8 @@ def superadmin_perfil():
 @login_requerido(['superadmin'])
 def cambiar_password():
     if request.method == 'POST':
+        if bloqueado_en_demo():
+            return redirect(url_for('cambiar_password'))
         password_actual = request.form.get('password_actual')
         password_nueva = request.form.get('password_nueva')
         password_confirmar = request.form.get('password_confirmar')
@@ -347,6 +406,9 @@ def jefe_asignar():
     conn = get_db()
     c = conn.cursor()
     if request.method == 'POST':
+        if bloqueado_en_demo():
+            conn.close()
+            return redirect(url_for('jefe_dashboard'))
         abogado_id = request.form.get('abogado_id')
         if not abogado_id:
             flash('Debes seleccionar un abogado', 'error')
@@ -400,6 +462,9 @@ def jefe_editar(id):
         return redirect(url_for('jefe_dashboard'))
 
     if request.method == 'POST':
+        if bloqueado_en_demo():
+            conn.close()
+            return redirect(url_for('jefe_dashboard'))
         titulo = request.form['titulo']
         cliente = request.form['cliente']
         fecha_vencimiento = request.form['fecha_vencimiento']
@@ -429,6 +494,8 @@ def jefe_editar(id):
 @app.route('/jefe/eliminar/<int:id>')
 @login_requerido(['jefe'])
 def jefe_eliminar(id):
+    if bloqueado_en_demo():
+        return redirect(url_for('jefe_dashboard'))
     conn = get_db()
     c = conn.cursor()
     c.execute("DELETE FROM documentos WHERE id = %s", (id,))
@@ -469,6 +536,8 @@ def abogado_dashboard():
 @login_requerido(['abogado'])
 def abogado_subir():
     if request.method == 'POST':
+        if bloqueado_en_demo():
+            return redirect(url_for('abogado_dashboard'))
         titulo = request.form['titulo']
         cliente = request.form['cliente']
         fecha_vencimiento = request.form['fecha_vencimiento']
@@ -514,6 +583,9 @@ def abogado_editar(id):
         return redirect(url_for('abogado_dashboard'))
 
     if request.method == 'POST':
+        if bloqueado_en_demo():
+            conn.close()
+            return redirect(url_for('abogado_dashboard'))
         titulo = request.form['titulo']
         cliente = request.form['cliente']
         fecha_vencimiento = request.form['fecha_vencimiento']
