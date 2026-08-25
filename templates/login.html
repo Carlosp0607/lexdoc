@@ -104,12 +104,58 @@
             color: #e74c3c;
         }
 
+        .alert-success {
+            background: #14301c;
+            border: 1px solid #27ae60;
+            color: #2ecc71;
+        }
+
         .footer {
             text-align: center;
             margin-top: 30px;
             color: #445566;
             font-size: 0.75rem;
             letter-spacing: 1px;
+        }
+
+        .demo-section {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #2a3f55;
+        }
+
+        .demo-label {
+            text-align: center;
+            color: #8899aa;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .demo-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .demo-btn {
+            display: block;
+            text-align: center;
+            padding: 11px;
+            background: transparent;
+            border: 1px solid #2a3f55;
+            border-radius: 4px;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        .demo-btn:hover {
+            border-color: #c9a227;
+            background: rgba(201, 162, 39, 0.08);
         }
     </style>
 </head>
@@ -135,66 +181,31 @@
         <form method="POST">
             <div class="form-group">
                 <label>Correo Electrónico</label>
-                <input type="email" name="email" 
+                <input type="email" name="email"
                        placeholder="tu@lexdoc.com" required>
             </div>
-           <div class="form-group">
-    <label>Contraseña</label>
-    <div style="position:relative;">
-        <input type="password" name="password" id="pass1"
-               placeholder="••••••••" required
-               style="padding-right:45px;">
-        <span onclick="togglePass('pass1', this)"
-              style="position:absolute; right:14px; top:50%;
-                     transform:translateY(-50%); cursor:pointer;
-                     font-size:1.1rem; opacity:0.4; user-select:none;">👁️</span>
-    </div>
-</div>
-            <button type="submit">INGRESAR</button>
-        </form>
-                <form method="POST">
             <div class="form-group">
-                <label>Correo Electrónico</label>
-                <input type="email" name="email" 
-                       placeholder="tu@lexdoc.com" required>
+                <label>Contraseña</label>
+                <div style="position:relative;">
+                    <input type="password" name="password" id="pass1"
+                           placeholder="••••••••" required
+                           style="padding-right:45px;">
+                    <span onclick="togglePass('pass1', this)"
+                          style="position:absolute; right:14px; top:50%;
+                                 transform:translateY(-50%); cursor:pointer;
+                                 font-size:1.1rem; opacity:0.4; user-select:none;">👁️</span>
+                </div>
             </div>
-           <div class="form-group">
-    <label>Contraseña</label>
-    <div style="position:relative;">
-        <input type="password" name="password" id="pass1"
-               placeholder="••••••••" required
-               style="padding-right:45px;">
-        <span onclick="togglePass('pass1', this)"
-              style="position:absolute; right:14px; top:50%;
-                     transform:translateY(-50%); cursor:pointer;
-                     font-size:1.1rem; opacity:0.4; user-select:none;">👁️</span>
-    </div>
-</div>
             <button type="submit">INGRESAR</button>
         </form>
 
-        <div style="margin-top:25px; padding-top:25px; border-top:1px solid #2a3f55;">
-            <p style="text-align:center; color:#8899aa; font-size:0.75rem; letter-spacing:1px; margin-bottom:15px; text-transform:uppercase;">
-                O prueba la demo sin registrarte
-            </p>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-                <a href="{{ url_for('entrar_invitado', rol='superadmin') }}"
-                   style="display:block; text-align:center; padding:11px; background:transparent; border:1px solid #2a3f55; border-radius:4px; color:#ffffff; text-decoration:none; font-size:0.85rem; letter-spacing:1px; transition:border-color 0.3s;">
-                    Entrar como Super Admin
-                </a>
-                <a href="{{ url_for('entrar_invitado', rol='jefe') }}"
-                   style="display:block; text-align:center; padding:11px; background:transparent; border:1px solid #2a3f55; border-radius:4px; color:#ffffff; text-decoration:none; font-size:0.85rem; letter-spacing:1px; transition:border-color 0.3s;">
-                    Entrar como Jefe de Firma
-                </a>
-                <a href="{{ url_for('entrar_invitado', rol='abogado') }}"
-                   style="display:block; text-align:center; padding:11px; background:transparent; border:1px solid #2a3f55; border-radius:4px; color:#ffffff; text-decoration:none; font-size:0.85rem; letter-spacing:1px; transition:border-color 0.3s;">
-                    Entrar como Abogado
-                </a>
+        <div class="demo-section">
+            <p class="demo-label">Prueba la demo</p>
+            <div class="demo-options">
+                <a class="demo-btn" href="{{ url_for('entrar_invitado', rol='superadmin') }}">Super Admin</a>
+                <a class="demo-btn" href="{{ url_for('entrar_invitado', rol='jefe') }}">Jefe de Firma</a>
+                <a class="demo-btn" href="{{ url_for('entrar_invitado', rol='abogado') }}">Abogado</a>
             </div>
-        </div>
-
-        <div class="footer">
-            <p>Acceso restringido — Solo personal autorizado</p>
         </div>
 
         <div class="footer">
@@ -212,6 +223,6 @@
             icon.style.opacity = '0.4';
         }
     }
-</script>
+    </script>
 </body>
 </html>
