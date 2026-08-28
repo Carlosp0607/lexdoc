@@ -7,8 +7,8 @@ init_db()
 
 APP_URL = os.environ.get('APP_URL', 'https://lexdoc.onrender.com')
 
-# Cada cuantas horas se limpian los datos de demostracion.
-HORAS_RESET_DEMO = int(os.environ.get('HORAS_RESET_DEMO', '12'))
+# Cada cuantas horas vuelve la demostracion a su estado inicial.
+HORAS_RESET = int(os.environ.get('HORAS_RESET_DEMO', '12'))
 
 
 def keep_alive():
@@ -21,9 +21,9 @@ def keep_alive():
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(keep_alive, 'interval', minutes=14)
-scheduler.add_job(resetear_demo, 'interval', hours=HORAS_RESET_DEMO)
+scheduler.add_job(resetear_demo, 'interval', hours=HORAS_RESET)
 scheduler.start()
-print(f"Limpieza de datos demo cada {HORAS_RESET_DEMO} horas")
+print(f"Reinicio de la demostracion cada {HORAS_RESET} horas")
 
 if __name__ == '__main__':
     app.run()
