@@ -119,51 +119,56 @@
         }
 
         .demo-section {
-            margin-top: 25px;
-            padding-top: 25px;
+            margin-top: 28px;
+            padding-top: 20px;
             border-top: 1px solid #2a3f55;
         }
 
         .demo-label {
             text-align: center;
             color: #8899aa;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
-            text-transform: uppercase;
+            font-size: 0.78rem;
+            margin-bottom: 12px;
+            line-height: 1.5;
         }
 
         .demo-options {
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
         .demo-btn {
-            display: block;
+            flex: 1;
             text-align: center;
-            padding: 11px;
+            padding: 9px 4px;
             background: transparent;
-            border: 1px solid #2a3f55;
+            border: 1px solid #3d5570;
             border-radius: 4px;
-            color: #ffffff;
+            color: #dfe6ee;
             text-decoration: none;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            transition: border-color 0.3s, background 0.3s;
+            font-size: 0.78rem;
+            letter-spacing: 0.5px;
+            transition: border-color 0.3s, background 0.3s, color 0.3s;
         }
 
         .demo-btn:hover {
             border-color: #c9a227;
             background: rgba(201, 162, 39, 0.08);
+            color: #ffffff;
         }
+
+        .demo-nota {
+            text-align: center;
+            color: #6b7c8d;
+            font-size: 0.68rem;
+            margin-top: 14px;
+            line-height: 1.5;
+        }
+
     </style>
 </head>
 
 <body>
-<div style="background:#1a2942; color:#f4f1e8; text-align:center; padding:10px 16px; font-size:13px; font-family: 'Segoe UI', sans-serif; border-bottom:2px solid #c9a227; position:fixed; top:0; left:0; width:100%; z-index:9999;">
-  Versión de demostración — Los datos mostrados son de prueba y no corresponden a casos ni clientes reales
-</div>
     <div class="container">
         <div class="logo">
             <h1>⚖ LEXDOC</h1>
@@ -199,14 +204,17 @@
             <button type="submit">INGRESAR</button>
         </form>
 
+        {% if modo_demo %}
         <div class="demo-section">
-            <p class="demo-label">Prueba la demo</p>
+            <p class="demo-label">&iquest;Solo quieres verlo? Entra sin registrarte</p>
             <div class="demo-options">
-                <a class="demo-btn" href="{{ url_for('entrar_invitado', rol='superadmin') }}">Super Admin</a>
-                <a class="demo-btn" href="{{ url_for('entrar_invitado', rol='jefe') }}">Jefe de Firma</a>
+                <a class="demo-btn" href="{{ url_for('entrar_invitado', rol='superadmin') }}">Admin</a>
+                <a class="demo-btn" href="{{ url_for('entrar_invitado', rol='jefe') }}">Jefe</a>
                 <a class="demo-btn" href="{{ url_for('entrar_invitado', rol='abogado') }}">Abogado</a>
             </div>
+            <p class="demo-nota">Versi&oacute;n de demostraci&oacute;n &mdash; los datos son de prueba y no corresponden a casos ni clientes reales</p>
         </div>
+        {% endif %}
 
         <div class="footer">
             <p>Acceso restringido — Solo personal autorizado</p>
