@@ -17,6 +17,15 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 #  BASE DE DATOS
 # ══════════════════════════════════════════
 DATABASE_URL = os.environ.get('DATABASE_URL')
+
+# ══════════════════════════════════════════
+#  MODO DEMO
+#  Controlado por la variable de entorno MODO_DEMO en Render.
+#  'true'  -> deploy de demostracion: acceso invitado + reset automatico
+#  ausente -> deploy real: login normal, sin invitados, sin reset
+# ══════════════════════════════════════════
+MODO_DEMO = os.environ.get('MODO_DEMO', 'false').lower() == 'true'
+
 def get_db():
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
     return conn
@@ -70,6 +79,7 @@ def init_db():
 
     # ── Usuarios demo para acceso de invitado ──
     usuarios_demo = [
+        ('Super Admin Demo', 'superadmin.demo@lexdoc.com', 'demo123', 'superadmin'),
         ('Jefe Demo', 'jefe.demo@lexdoc.com', 'demo123', 'jefe'),
         ('Abogado Demo', 'abogado.demo@lexdoc.com', 'demo123', 'abogado'),
     ]
@@ -101,11 +111,14 @@ def login_requerido(roles_permitidos):
     return decorador
 
 def bloqueado_en_demo():
-    """Devuelve True y muestra un aviso si el usuario actual es una cuenta demo."""
-    if session.get('demo'):
-        flash('Esta acción está deshabilitada en modo demo', 'error')
-        return True
+    """Sin bloqueos. La demo corre sobre su propia base de datos, asi que
+    el visitante puede ejecutar cualquier accion sin afectar produccion."""
     return False
+
+@app.context_processor
+def inyectar_modo_demo():
+    """Expone MODO_DEMO a todas las plantillas."""
+    return dict(modo_demo=MODO_DEMO)
 
 # ══════════════════════════════════════════
 #  LOGIN / LOGOUT
@@ -140,13 +153,15 @@ def login():
 
 # ── Acceso rápido como invitado (sin contraseña) ──
 DEMO_EMAILS = {
-    'superadmin': 'admin@lexdoc.com',
+    'superadmin': 'superadmin.demo@lexdoc.com',
     'jefe': 'jefe.demo@lexdoc.com',
     'abogado': 'abogado.demo@lexdoc.com',
 }
 
 @app.route('/invitado/<rol>')
 def entrar_invitado(rol):
+    if not MODO_DEMO:
+        return redirect(url_for('login'))
     if rol not in DEMO_EMAILS:
         return redirect(url_for('login'))
 
@@ -678,9 +693,86 @@ def enviar_email(destinatario, nombre, titulo, cliente, vencimiento):
         return False
 
 # ══════════════════════════════════════════
+#  RESET DE LA DEMO
+# ══════════════════════════════════════════
+def resetear_demo():
+    """Borra todo lo que hizo el visitante y vuelve a sembrar los datos de
+    ejemplo. Solo corre si MODO_DEMO esta activo. Nunca toca produccion."""
+    if not MODO_DEMO:
+        print("Reset omitido: este deploy no esta en modo demo")
+        return
+
+    conn = get_db()
+    c = conn.cursor()
+    try:
+        c.execute("DELETE FROM documentos")
+        c.execute("DELETE FROM usuarios")
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        print(f"Error al limpiar la demo: {e}")
+        return
+
+    init_db()
+    sembrar_documentos_demo()
+    print(f"Demo reseteada — {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+
+
+def sembrar_documentos_demo():
+    """Crea documentos de ejemplo para que la demo nunca se vea vacia."""
+    if not MODO_DEMO:
+        return
+
+    conn = get_db()
+    c = conn.cursor()
+
+    c.execute("SELECT id FROM usuarios WHERE email = %s", ('abogado.demo@lexdoc.com',))
+    fila = c.fetchone()
+    abogado_id = fila['id'] if fila else None
+
+    c.execute("SELECT id FROM usuarios WHERE email = %s", ('jefe.demo@lexdoc.com',))
+    fila = c.fetchone()
+    jefe_id = fila['id'] if fila else None
+
+    hoy = datetime.now()
+    ejemplos = [
+        ('Contrato de arrendamiento comercial', 'Inversiones Andina S.A.S.',
+         'contrato-arrendamiento.pdf', (hoy + timedelta(days=12)).strftime('%Y-%m-%d'),
+         'Renovacion anual pendiente de firma.', 'pendiente'),
+        ('Poder general para pleitos', 'Distribuidora El Roble Ltda.',
+         'poder-general.pdf', (hoy + timedelta(days=45)).strftime('%Y-%m-%d'),
+         'Radicado ante notaria 12 de Bogota.', 'en_proceso'),
+        ('Demanda laboral primera instancia', 'Constructora Sierra S.A.',
+         'demanda-laboral.pdf', (hoy + timedelta(days=5)).strftime('%Y-%m-%d'),
+         'Audiencia programada. Revisar pruebas.', 'en_proceso'),
+        ('Acta de conciliacion', 'Transportes del Norte S.A.S.',
+         'acta-conciliacion.pdf', (hoy + timedelta(days=90)).strftime('%Y-%m-%d'),
+         'Acuerdo cerrado con la contraparte.', 'finalizado'),
+    ]
+
+    for titulo, cliente, archivo, venc, notas, estado in ejemplos:
+        try:
+            c.execute("""INSERT INTO documentos
+                (titulo, cliente, archivo, fecha_vencimiento, notas,
+                 estado_caso, abogado_id, asignado_por)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s)""",
+                (titulo, cliente, archivo, venc, notas, estado, abogado_id, jefe_id))
+        except Exception:
+            conn.rollback()
+
+    conn.commit()
+    conn.close()
+
+
+# ══════════════════════════════════════════
 #  INICIAR
 # ══════════════════════════════════════════
 init_db()
+
+if MODO_DEMO:
+    sembrar_documentos_demo()
 
 
 if __name__ == '__main__':
