@@ -153,6 +153,26 @@ def entrar_invitado(rol):
     c = conn.cursor()
     c.execute("SELECT * FROM usuarios WHERE email = %s", (DEMO_EMAILS[rol],))
     usuario = c.fetchone()
+
+    # Si la cuenta no existe todavia, se crea en el momento. Esto evita que
+    # el boton falle cuando la base es nueva o quedo incompleta.
+    if not usuario:
+        nombres = {'superadmin': 'Super Admin Demo',
+                   'jefe': 'Jefe Demo',
+                   'abogado': 'Abogado Demo'}
+        try:
+            c.execute(
+                "INSERT INTO usuarios (nombre, email, password, rol) VALUES (%s, %s, %s, %s)",
+                (nombres[rol], DEMO_EMAILS[rol],
+                 generate_password_hash('demo123'), rol)
+            )
+            conn.commit()
+            c.execute("SELECT * FROM usuarios WHERE email = %s", (DEMO_EMAILS[rol],))
+            usuario = c.fetchone()
+        except Exception as e:
+            conn.rollback()
+            print(f"No se pudo crear la cuenta demo {rol}: {e}")
+
     conn.close()
 
     if usuario:
@@ -162,7 +182,7 @@ def entrar_invitado(rol):
         session['demo'] = True
         return redirect(url_for('dashboard'))
 
-    flash('Cuenta demo no disponible', 'error')
+    flash('No se pudo iniciar la demostracion. Recarga la pagina.', 'error')
     return redirect(url_for('login'))
 
 @app.route('/logout')
