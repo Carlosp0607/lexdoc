@@ -1,14 +1,13 @@
-from app import app, init_db, resetear_demo, MODO_DEMO
+from app import app, init_db, resetear_demo
 from apscheduler.schedulers.background import BackgroundScheduler
 import requests
 import os
 
 init_db()
 
-# URL propia del servicio. Cada deploy define la suya en Render.
 APP_URL = os.environ.get('APP_URL', 'https://lexdoc.onrender.com')
 
-# Cada cuantas horas se limpia la demo. Solo aplica si MODO_DEMO esta activo.
+# Cada cuantas horas se limpian los datos de demostracion.
 HORAS_RESET_DEMO = int(os.environ.get('HORAS_RESET_DEMO', '12'))
 
 
@@ -22,12 +21,9 @@ def keep_alive():
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(keep_alive, 'interval', minutes=14)
-
-if MODO_DEMO:
-    scheduler.add_job(resetear_demo, 'interval', hours=HORAS_RESET_DEMO)
-    print(f"Modo demo activo — reset cada {HORAS_RESET_DEMO} horas")
-
+scheduler.add_job(resetear_demo, 'interval', hours=HORAS_RESET_DEMO)
 scheduler.start()
+print(f"Limpieza de datos demo cada {HORAS_RESET_DEMO} horas")
 
 if __name__ == '__main__':
     app.run()
