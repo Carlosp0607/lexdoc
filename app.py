@@ -17,7 +17,6 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 #  BASE DE DATOS
 # ══════════════════════════════════════════
 DATABASE_URL = os.environ.get('DATABASE_URL')
-
 def get_db():
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
     return conn
@@ -31,8 +30,7 @@ def init_db():
         nombre TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
-        rol TEXT NOT NULL,
-        es_demo BOOLEAN DEFAULT FALSE
+        rol TEXT NOT NULL
     )''')
 
     c.execute('''CREATE TABLE IF NOT EXISTS documentos (
@@ -48,8 +46,7 @@ def init_db():
         asignado_por INTEGER,
         fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        alerta_enviada INTEGER DEFAULT 0,
-        es_demo BOOLEAN DEFAULT FALSE
+        alerta_enviada INTEGER DEFAULT 0
     )''')
 
     migraciones = [
@@ -57,10 +54,6 @@ def init_db():
         "ALTER TABLE documentos ADD COLUMN IF NOT EXISTS estado_caso TEXT DEFAULT 'pendiente'",
         "ALTER TABLE documentos ADD COLUMN IF NOT EXISTS fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
         "ALTER TABLE documentos ADD COLUMN IF NOT EXISTS alerta_enviada INTEGER DEFAULT 0",
-        "ALTER TABLE documentos ADD COLUMN IF NOT EXISTS es_demo BOOLEAN DEFAULT FALSE",
-        "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS es_demo BOOLEAN DEFAULT FALSE",
-        "UPDATE documentos SET es_demo = FALSE WHERE es_demo IS NULL",
-        "UPDATE usuarios SET es_demo = FALSE WHERE es_demo IS NULL",
     ]
     for sql in migraciones:
         try:
@@ -83,16 +76,10 @@ def init_db():
     ]
     for nombre, email, pw, rol in usuarios_demo:
         try:
-            c.execute("INSERT INTO usuarios (nombre, email, password, rol, es_demo) VALUES (%s, %s, %s, %s, TRUE)",
+            c.execute("INSERT INTO usuarios (nombre, email, password, rol) VALUES (%s, %s, %s, %s)",
                 (nombre, email, generate_password_hash(pw), rol))
         except:
             conn.rollback()
-
-    try:
-        c.execute("UPDATE usuarios SET es_demo = TRUE WHERE email IN %s",
-                  (tuple(u[1] for u in usuarios_demo),))
-    except:
-        conn.rollback()
 
     conn.commit()
     conn.close()
@@ -114,24 +101,10 @@ def login_requerido(roles_permitidos):
         return wrapper
     return decorador
 
-def en_demo():
-    """True si la sesion actual entro por un boton de invitado.
-
-    Este valor decide sobre que mundo trabaja el usuario: los invitados solo
-    ven y modifican registros con es_demo = TRUE. Nunca alcanzan datos reales,
-    ni siquiera adivinando un ID."""
-    return bool(session.get('demo'))
-
-
 def bloqueado_en_demo():
-    """Sin bloqueos. La demo corre sobre su propia base de datos, asi que
-    el visitante puede ejecutar cualquier accion sin afectar produccion."""
+    """Sin restricciones. Todo el sistema es una demostracion: cualquier
+    visitante puede ejecutar cualquier accion. Los datos se limpian solos."""
     return False
-
-@app.context_processor
-def inyectar_modo_demo():
-    """Los botones de invitado siempre se muestran en el login."""
-    return dict(modo_demo=True)
 
 # ══════════════════════════════════════════
 #  LOGIN / LOGOUT
@@ -220,13 +193,11 @@ def dashboard():
 def superadmin_dashboard():
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT * FROM usuarios WHERE rol != 'superadmin' AND es_demo = %s",
-              (en_demo(),))
+    c.execute("SELECT * FROM usuarios WHERE rol != 'superadmin'")
     usuarios = c.fetchall()
     c.execute('''SELECT d.*, u.nombre as abogado
                FROM documentos d
-               JOIN usuarios u ON d.abogado_id = u.id
-               WHERE d.es_demo = %s''', (en_demo(),))
+               JOIN usuarios u ON d.abogado_id = u.id''')
     documentos = c.fetchall()
     conn.close()
 
@@ -248,8 +219,7 @@ def superadmin_dashboard():
 def superadmin_usuarios():
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT * FROM usuarios WHERE rol != 'superadmin' AND es_demo = %s",
-              (en_demo(),))
+    c.execute("SELECT * FROM usuarios WHERE rol != 'superadmin'")
     usuarios = c.fetchall()
     conn.close()
     return render_template('superadmin/usuarios.html',
@@ -269,8 +239,8 @@ def crear_usuario():
         conn = get_db()
         c = conn.cursor()
         c.execute(
-            "INSERT INTO usuarios (nombre, email, password, rol, es_demo) VALUES (%s, %s, %s, %s, %s)",
-            (nombre, email, generate_password_hash(password), rol, en_demo())
+            "INSERT INTO usuarios (nombre, email, password, rol) VALUES (%s, %s, %s, %s)",
+            (nombre, email, generate_password_hash(password), rol)
         )
         conn.commit()
         conn.close()
@@ -286,8 +256,7 @@ def eliminar_usuario(id):
         return redirect(url_for('superadmin_usuarios'))
     conn = get_db()
     c = conn.cursor()
-    c.execute("DELETE FROM usuarios WHERE id = %s AND es_demo = %s",
-              (id, en_demo()))
+    c.execute("DELETE FROM usuarios WHERE id = %s", (id,))
     conn.commit()
     conn.close()
     flash('Usuario eliminado', 'success')
@@ -308,21 +277,20 @@ def editar_usuario(id):
         nueva_password = request.form.get('password')
         if nueva_password:
             c.execute(
-                "UPDATE usuarios SET nombre=%s, email=%s, rol=%s, password=%s WHERE id=%s AND es_demo=%s",
-                (nombre, email, rol, generate_password_hash(nueva_password), id, en_demo())
+                "UPDATE usuarios SET nombre=%s, email=%s, rol=%s, password=%s WHERE id=%s",
+                (nombre, email, rol, generate_password_hash(nueva_password), id)
             )
         else:
             c.execute(
-                "UPDATE usuarios SET nombre=%s, email=%s, rol=%s WHERE id=%s AND es_demo=%s",
-                (nombre, email, rol, id, en_demo())
+                "UPDATE usuarios SET nombre=%s, email=%s, rol=%s WHERE id=%s",
+                (nombre, email, rol, id)
             )
         conn.commit()
         conn.close()
         flash('Usuario actualizado correctamente', 'success')
         return redirect(url_for('superadmin_usuarios'))
 
-    c.execute("SELECT * FROM usuarios WHERE id = %s AND es_demo = %s",
-              (id, en_demo()))
+    c.execute("SELECT * FROM usuarios WHERE id = %s", (id,))
     usuario = c.fetchone()
     conn.close()
     return render_template('superadmin/editar_usuario.html',
@@ -342,8 +310,8 @@ def superadmin_perfil():
         email = request.form.get('email')
         try:
             c.execute(
-                "UPDATE usuarios SET nombre=%s, email=%s WHERE id=%s AND es_demo=%s",
-                (nombre, email, session['usuario_id'], en_demo())
+                "UPDATE usuarios SET nombre=%s, email=%s WHERE id=%s",
+                (nombre, email, session['usuario_id'])
             )
             conn.commit()
             session['usuario_nombre'] = nombre
@@ -391,8 +359,8 @@ def cambiar_password():
             return redirect(url_for('cambiar_password'))
 
         c.execute(
-            "UPDATE usuarios SET password = %s WHERE id = %s AND es_demo = %s",
-            (generate_password_hash(password_nueva), session['usuario_id'], en_demo())
+            "UPDATE usuarios SET password = %s WHERE id = %s",
+            (generate_password_hash(password_nueva), session['usuario_id'])
         )
         conn.commit()
         conn.close()
@@ -410,13 +378,11 @@ def cambiar_password():
 def jefe_dashboard():
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT * FROM usuarios WHERE rol = 'abogado' AND es_demo = %s",
-                  (en_demo(),))
+    c.execute("SELECT * FROM usuarios WHERE rol = 'abogado'")
     abogados = c.fetchall()
     c.execute('''SELECT d.*, u.nombre as abogado FROM documentos d
                JOIN usuarios u ON d.abogado_id = u.id
-               WHERE d.es_demo = %s
-               ORDER BY d.fecha_vencimiento ASC''', (en_demo(),))
+               ORDER BY d.fecha_vencimiento ASC''')
     documentos = c.fetchall()
     conn.close()
 
@@ -445,8 +411,7 @@ def jefe_asignar():
         abogado_id = request.form.get('abogado_id')
         if not abogado_id:
             flash('Debes seleccionar un abogado', 'error')
-            c.execute("SELECT * FROM usuarios WHERE rol = 'abogado' AND es_demo = %s",
-                  (en_demo(),))
+            c.execute("SELECT * FROM usuarios WHERE rol = 'abogado'")
             abogados = c.fetchall()
             conn.close()
             return render_template('jefe/asignar.html',
@@ -466,18 +431,17 @@ def jefe_asignar():
         c.execute(
             '''INSERT INTO documentos
                (titulo, cliente, archivo, fecha_vencimiento, notas,
-                estado_caso, abogado_id, asignado_por, es_demo)
-               VALUES (%s, %s, %s, %s, %s, 'pendiente', %s, %s, %s)''',
+                estado_caso, abogado_id, asignado_por)
+               VALUES (%s, %s, %s, %s, %s, 'pendiente', %s, %s)''',
             (titulo, cliente, nombre_archivo, fecha_vencimiento,
-             notas, abogado_id, session['usuario_id'], en_demo())
+             notas, abogado_id, session['usuario_id'])
         )
         conn.commit()
         conn.close()
         flash('Caso asignado correctamente', 'success')
         return redirect(url_for('jefe_dashboard'))
 
-    c.execute("SELECT * FROM usuarios WHERE rol = 'abogado' AND es_demo = %s",
-                  (en_demo(),))
+    c.execute("SELECT * FROM usuarios WHERE rol = 'abogado'")
     abogados = c.fetchall()
     conn.close()
     return render_template('jefe/asignar.html',
@@ -489,8 +453,7 @@ def jefe_asignar():
 def jefe_editar(id):
     conn = get_db()
     c = conn.cursor()
-    c.execute("SELECT * FROM documentos WHERE id = %s AND es_demo = %s",
-              (id, en_demo()))
+    c.execute("SELECT * FROM documentos WHERE id = %s", (id,))
     doc = c.fetchone()
 
     if not doc:
@@ -510,17 +473,16 @@ def jefe_editar(id):
         c.execute(
             '''UPDATE documentos SET titulo=%s, cliente=%s,
                fecha_vencimiento=%s, notas=%s, abogado_id=%s,
-               fecha_actualizacion=%s WHERE id=%s AND es_demo=%s''',
+               fecha_actualizacion=%s WHERE id=%s''',
             (titulo, cliente, fecha_vencimiento, notas,
-             abogado_id, datetime.now(), id, en_demo())
+             abogado_id, datetime.now(), id)
         )
         conn.commit()
         conn.close()
         flash('Caso actualizado correctamente', 'success')
         return redirect(url_for('jefe_dashboard'))
 
-    c.execute("SELECT * FROM usuarios WHERE rol = 'abogado' AND es_demo = %s",
-                  (en_demo(),))
+    c.execute("SELECT * FROM usuarios WHERE rol = 'abogado'")
     abogados = c.fetchall()
     conn.close()
     return render_template('jefe/editar.html',
@@ -535,8 +497,7 @@ def jefe_eliminar(id):
         return redirect(url_for('jefe_dashboard'))
     conn = get_db()
     c = conn.cursor()
-    c.execute("DELETE FROM documentos WHERE id = %s AND es_demo = %s",
-              (id, en_demo()))
+    c.execute("DELETE FROM documentos WHERE id = %s", (id,))
     conn.commit()
     conn.close()
     flash('Caso eliminado correctamente', 'success')
@@ -551,9 +512,9 @@ def abogado_dashboard():
     conn = get_db()
     c = conn.cursor()
     c.execute(
-        '''SELECT * FROM documentos WHERE abogado_id = %s AND es_demo = %s
+        '''SELECT * FROM documentos WHERE abogado_id = %s
            ORDER BY fecha_vencimiento ASC''',
-        (session['usuario_id'], en_demo())
+        (session['usuario_id'],)
     )
     documentos = c.fetchall()
     conn.close()
@@ -592,10 +553,10 @@ def abogado_subir():
         c.execute(
             '''INSERT INTO documentos
                (titulo, cliente, archivo, fecha_vencimiento, notas,
-                comentario_abogado, estado_caso, abogado_id, asignado_por, es_demo)
-               VALUES (%s, %s, %s, %s, %s, %s, 'en_proceso', %s, %s, %s)''',
+                comentario_abogado, estado_caso, abogado_id, asignado_por)
+               VALUES (%s, %s, %s, %s, %s, %s, 'en_proceso', %s, %s)''',
             (titulo, cliente, nombre_archivo, fecha_vencimiento,
-             notas, comentario, session['usuario_id'], session['usuario_id'], en_demo())
+             notas, comentario, session['usuario_id'], session['usuario_id'])
         )
         conn.commit()
         conn.close()
@@ -611,8 +572,8 @@ def abogado_editar(id):
     conn = get_db()
     c = conn.cursor()
     c.execute(
-        "SELECT * FROM documentos WHERE id = %s AND abogado_id = %s AND es_demo = %s",
-        (id, session['usuario_id'], en_demo())
+        "SELECT * FROM documentos WHERE id = %s AND abogado_id = %s",
+        (id, session['usuario_id'])
     )
     doc = c.fetchone()
 
@@ -633,9 +594,9 @@ def abogado_editar(id):
         c.execute(
             '''UPDATE documentos SET titulo=%s, cliente=%s,
                fecha_vencimiento=%s, comentario_abogado=%s,
-               estado_caso=%s, fecha_actualizacion=%s WHERE id=%s AND es_demo=%s''',
+               estado_caso=%s, fecha_actualizacion=%s WHERE id=%s''',
             (titulo, cliente, fecha_vencimiento,
-             comentario, estado_caso, datetime.now(), id, en_demo())
+             comentario, estado_caso, datetime.now(), id)
         )
         conn.commit()
         conn.close()
@@ -663,7 +624,7 @@ def descargar(nombre_archivo):
 def reset_alertas():
     conn = get_db()
     c = conn.cursor()
-    c.execute('UPDATE documentos SET alerta_enviada = 0 WHERE es_demo = FALSE')
+    c.execute('UPDATE documentos SET alerta_enviada = 0')
     conn.commit()
     conn.close()
     return 'Reseteado OK'
@@ -682,8 +643,7 @@ def enviar_alertas():
                   u.email, u.nombre
            FROM documentos d JOIN usuarios u ON d.abogado_id = u.id
            WHERE d.fecha_vencimiento BETWEEN %s AND %s
-           AND d.alerta_enviada = 0
-           AND d.es_demo = FALSE''',
+           AND d.alerta_enviada = 0''',
         (hoy.strftime('%Y-%m-%d'), limite.strftime('%Y-%m-%d'))
     )
     docs = c.fetchall()
@@ -717,48 +677,24 @@ def enviar_email(destinatario, nombre, titulo, cliente, vencimiento):
         return False
 
 # ══════════════════════════════════════════
-#  RESET DE LA DEMO
+#  DATOS DE DEMOSTRACION
 # ══════════════════════════════════════════
-def resetear_demo():
-    """Borra todo lo que hizo el visitante y vuelve a sembrar los datos de
-    ejemplo. Solo borra registros con es_demo = TRUE."""
-    conn = get_db()
-    c = conn.cursor()
-    try:
-        c.execute("DELETE FROM documentos WHERE es_demo = TRUE")
-        c.execute("DELETE FROM usuarios WHERE es_demo = TRUE AND email NOT IN %s",
-                  (('superadmin.demo@lexdoc.com', 'jefe.demo@lexdoc.com',
-                    'abogado.demo@lexdoc.com'),))
-        conn.commit()
-        conn.close()
-    except Exception as e:
-        conn.rollback()
-        conn.close()
-        print(f"Error al limpiar la demo: {e}")
-        return
-
-    init_db()
-    sembrar_documentos_demo()
-    print(f"Demo reseteada — {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-
-
 def sembrar_documentos_demo():
-    """Crea documentos de ejemplo para que la demo nunca se vea vacia."""
+    """Carga casos de ejemplo si la base esta vacia."""
     conn = get_db()
     c = conn.cursor()
 
-    c.execute("SELECT COUNT(*) AS n FROM documentos WHERE es_demo = TRUE")
+    c.execute("SELECT COUNT(*) AS n FROM documentos")
     if c.fetchone()['n'] > 0:
         conn.close()
         return
 
     c.execute("SELECT id FROM usuarios WHERE email = %s", ('abogado.demo@lexdoc.com',))
-    fila = c.fetchone()
-    abogado_id = fila['id'] if fila else None
-
+    f = c.fetchone()
+    abogado_id = f['id'] if f else None
     c.execute("SELECT id FROM usuarios WHERE email = %s", ('jefe.demo@lexdoc.com',))
-    fila = c.fetchone()
-    jefe_id = fila['id'] if fila else None
+    f = c.fetchone()
+    jefe_id = f['id'] if f else None
 
     hoy = datetime.now()
     ejemplos = [
@@ -774,20 +710,41 @@ def sembrar_documentos_demo():
         ('Acta de conciliacion', 'Transportes del Norte S.A.S.',
          'acta-conciliacion.pdf', (hoy + timedelta(days=90)).strftime('%Y-%m-%d'),
          'Acuerdo cerrado con la contraparte.', 'finalizado'),
+        ('Escritura de compraventa', 'Agropecuaria La Esperanza S.A.S.',
+         'escritura-compraventa.pdf', (hoy + timedelta(days=25)).strftime('%Y-%m-%d'),
+         'Pendiente registro en instrumentos publicos.', 'pendiente'),
     ]
-
     for titulo, cliente, archivo, venc, notas, estado in ejemplos:
         try:
             c.execute("""INSERT INTO documentos
                 (titulo, cliente, archivo, fecha_vencimiento, notas,
-                 estado_caso, abogado_id, asignado_por, es_demo)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,TRUE)""",
+                 estado_caso, abogado_id, asignado_por)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s)""",
                 (titulo, cliente, archivo, venc, notas, estado, abogado_id, jefe_id))
         except Exception:
             conn.rollback()
-
     conn.commit()
     conn.close()
+
+
+def resetear_demo():
+    """Devuelve la demostracion a su estado inicial."""
+    conn = get_db()
+    c = conn.cursor()
+    try:
+        c.execute("DELETE FROM documentos")
+        c.execute("DELETE FROM usuarios")
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        print(f"Error al limpiar: {e}")
+        return
+
+    init_db()
+    sembrar_documentos_demo()
+    print(f"Demostracion reiniciada — {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
 
 # ══════════════════════════════════════════
