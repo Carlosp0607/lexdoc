@@ -750,13 +750,15 @@ def descargar(nombre_archivo):
     )
 
 @app.route('/reset-alertas')
+@login_requerido(['superadmin'])
 def reset_alertas():
     conn = get_db()
     c = conn.cursor()
     c.execute('UPDATE documentos SET alerta_enviada = 0')
     conn.commit()
     conn.close()
-    return 'Reseteado OK'
+    flash('Alertas reiniciadas correctamente', 'success')
+    return redirect(url_for('superadmin_dashboard'))
 
 # ══════════════════════════════════════════
 #  ALERTAS POR EMAIL
