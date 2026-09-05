@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -105,6 +105,49 @@ def bloqueado_en_demo():
     """Sin restricciones. Todo el sistema es una demostracion: cualquier
     visitante puede ejecutar cualquier accion. Los datos se limpian solos."""
     return False
+
+
+# ══════════════════════════════════════════
+#  FRANJA DE AVISO DEMO (todas las paginas)
+# ══════════════════════════════════════════
+FRANJA_DEMO = """
+<div id="franja-demo-lexdoc">
+  <strong>MODO DEMOSTRACION</strong>
+  <span>Todos los casos, clientes y documentos son ficticios.
+  Ninguno corresponde a una persona, empresa o proceso judicial real.</span>
+</div>
+<style>
+  #franja-demo-lexdoc {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+    background: #c9a227; color: #14202c;
+    font-family: Arial, Helvetica, sans-serif; font-size: 0.85rem;
+    text-align: center; padding: 10px 18px; line-height: 1.4;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.25);
+  }
+  #franja-demo-lexdoc strong { letter-spacing: 2px; margin-right: 8px; }
+  body { padding-bottom: 60px; }
+</style>
+"""
+
+
+@app.after_request
+def inyectar_franja_demo(response):
+    """Agrega la franja de aviso al final de cada pagina HTML.
+    El login se excluye porque ya muestra su propio aviso grande."""
+    try:
+        if request.path.startswith('/login'):
+            return response
+        if not response.content_type.startswith('text/html'):
+            return response
+        if response.direct_passthrough:
+            return response
+        html = response.get_data(as_text=True)
+        if '</body>' not in html or 'franja-demo-lexdoc' in html:
+            return response
+        response.set_data(html.replace('</body>', FRANJA_DEMO + '</body>', 1))
+    except Exception:
+        pass
+    return response
 
 # ══════════════════════════════════════════
 #  LOGIN / LOGOUT
@@ -631,13 +674,79 @@ def abogado_editar(id):
 # ══════════════════════════════════════════
 #  DESCARGA DE ARCHIVOS
 # ══════════════════════════════════════════
+def generar_pdf_prueba(titulo, cliente):
+    """Construye un PDF de una pagina que deja claro que es un archivo
+    de prueba. No usa librerias externas: arma los bytes del PDF a mano."""
+    lineas = [
+        (72, 700, 20, 'DOCUMENTO DE PRUEBA'),
+        (72, 660, 12, 'Este archivo no contiene informacion real.'),
+        (72, 640, 12, 'Fue generado automaticamente por la demostracion de LexDoc.'),
+        (72, 590, 12, 'Caso: ' + titulo),
+        (72, 570, 12, 'Cliente: ' + cliente),
+        (72, 520, 10, 'Ningun dato de esta pantalla corresponde a un caso,'),
+        (72, 505, 10, 'cliente o documento legal real.'),
+    ]
+    partes = []
+    for x, y, tam, texto in lineas:
+        t = texto.replace('\\', '').replace('(', '').replace(')', '')
+        fuente = 'F2' if tam >= 20 else 'F1'
+        partes.append('BT /%s %d Tf %d %d Td (%s) Tj ET' % (fuente, tam, x, y, t))
+    contenido = '\n'.join(partes).encode('latin-1', 'replace')
+
+    objetos = [
+        b'<< /Type /Catalog /Pages 2 0 R >>',
+        b'<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+        b'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] '
+        b'/Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>',
+        b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+        b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>',
+        b'<< /Length ' + str(len(contenido)).encode() + b' >>\nstream\n'
+        + contenido + b'\nendstream',
+    ]
+
+    salida = bytearray(b'%PDF-1.4\n')
+    offsets = []
+    for i, cuerpo in enumerate(objetos, start=1):
+        offsets.append(len(salida))
+        salida += str(i).encode() + b' 0 obj\n' + cuerpo + b'\nendobj\n'
+
+    inicio_xref = len(salida)
+    salida += b'xref\n0 ' + str(len(objetos) + 1).encode() + b'\n'
+    salida += b'0000000000 65535 f \n'
+    for off in offsets:
+        salida += ('%010d 00000 n \n' % off).encode()
+    salida += b'trailer\n<< /Size ' + str(len(objetos) + 1).encode() + b' /Root 1 0 R >>\n'
+    salida += b'startxref\n' + str(inicio_xref).encode() + b'\n%%EOF\n'
+    return bytes(salida)
+
+
 @app.route('/descargar/<nombre_archivo>')
 def descargar(nombre_archivo):
+    """En la demostracion nunca se entrega un archivo real. Siempre se
+    devuelve un PDF generado al vuelo que dice que es un documento de prueba."""
     if 'usuario_id' not in session:
         return redirect(url_for('login'))
-    return send_from_directory(
-        os.path.abspath(app.config['UPLOAD_FOLDER']),
-        nombre_archivo
+
+    titulo = 'Documento de prueba'
+    cliente = 'Cliente de prueba'
+    try:
+        conn = get_db()
+        c = conn.cursor()
+        c.execute("SELECT titulo, cliente FROM documentos WHERE archivo = %s LIMIT 1",
+                  (nombre_archivo,))
+        fila = c.fetchone()
+        conn.close()
+        if fila:
+            titulo = fila['titulo']
+            cliente = fila['cliente']
+    except Exception:
+        pass
+
+    pdf = generar_pdf_prueba(titulo, cliente)
+    return Response(
+        pdf,
+        mimetype='application/pdf',
+        headers={'Content-Disposition': 'inline; filename="documento-de-prueba.pdf"'}
     )
 
 @app.route('/reset-alertas')
@@ -718,21 +827,21 @@ def sembrar_documentos_demo():
 
     hoy = datetime.now()
     ejemplos = [
-        ('Contrato de arrendamiento comercial', 'Inversiones Andina S.A.S.',
-         'contrato-arrendamiento.pdf', (hoy + timedelta(days=12)).strftime('%Y-%m-%d'),
-         'Renovacion anual pendiente de firma.', 'pendiente'),
-        ('Poder general para pleitos', 'Distribuidora El Roble Ltda.',
-         'poder-general.pdf', (hoy + timedelta(days=45)).strftime('%Y-%m-%d'),
-         'Radicado ante notaria 12 de Bogota.', 'en_proceso'),
-        ('Demanda laboral primera instancia', 'Constructora Sierra S.A.',
-         'demanda-laboral.pdf', (hoy + timedelta(days=5)).strftime('%Y-%m-%d'),
-         'Audiencia programada. Revisar pruebas.', 'en_proceso'),
-        ('Acta de conciliacion', 'Transportes del Norte S.A.S.',
-         'acta-conciliacion.pdf', (hoy + timedelta(days=90)).strftime('%Y-%m-%d'),
-         'Acuerdo cerrado con la contraparte.', 'finalizado'),
-        ('Escritura de compraventa', 'Agropecuaria La Esperanza S.A.S.',
-         'escritura-compraventa.pdf', (hoy + timedelta(days=25)).strftime('%Y-%m-%d'),
-         'Pendiente registro en instrumentos publicos.', 'pendiente'),
+        ('PRUEBA - Contrato de arrendamiento', 'CLIENTE PRUEBA 01',
+         'prueba-contrato.pdf', (hoy + timedelta(days=12)).strftime('%Y-%m-%d'),
+         'Dato de prueba. No corresponde a ningun caso real.', 'pendiente'),
+        ('PRUEBA - Poder general', 'CLIENTE PRUEBA 02',
+         'prueba-poder.pdf', (hoy + timedelta(days=45)).strftime('%Y-%m-%d'),
+         'Dato de prueba. No corresponde a ningun caso real.', 'en_proceso'),
+        ('PRUEBA - Demanda laboral', 'CLIENTE PRUEBA 03',
+         'prueba-demanda.pdf', (hoy + timedelta(days=5)).strftime('%Y-%m-%d'),
+         'Dato de prueba. No corresponde a ningun caso real.', 'en_proceso'),
+        ('PRUEBA - Acta de conciliacion', 'CLIENTE PRUEBA 04',
+         'prueba-acta.pdf', (hoy + timedelta(days=90)).strftime('%Y-%m-%d'),
+         'Dato de prueba. No corresponde a ningun caso real.', 'finalizado'),
+        ('PRUEBA - Escritura de compraventa', 'CLIENTE PRUEBA 05',
+         'prueba-escritura.pdf', (hoy + timedelta(days=25)).strftime('%Y-%m-%d'),
+         'Dato de prueba. No corresponde a ningun caso real.', 'pendiente'),
     ]
     for titulo, cliente, archivo, venc, notas, estado in ejemplos:
         try:
