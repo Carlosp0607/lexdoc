@@ -1,0 +1,3 @@
+# Las plantillas Jinja no cuentan para la estadistica de lenguajes.
+# La logica de la aplicacion esta en app.py (Python).
+templates/**/*.html linguist-detectable=false
