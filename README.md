@@ -30,7 +30,7 @@ La aplicación define tres perfiles. El rol se guarda en la tabla `usuarios` y d
 | **Jefe** | Asigna casos a los abogados. Edita y elimina cualquier caso. Ve todos los procesos. |
 | **Abogado** | Sube documentos, edita los casos asignados y registra comentarios. Solo ve lo propio. |
 
-El aislamiento no es solo de interfaz: las consultas del panel de abogado filtran por `abogado_id`, así que una sesión de abogado no puede recuperar casos de otro ni cambiando la URL.
+El aislamiento no es solo de interfaz: las consultas del panel de abogado filtran por `abogado_id`, así que una sesión de abogado no puede recuperar casos de otro ni cambiando la URL. Esa garantía está cubierta por pruebas automatizadas, ver la sección [Pruebas](#pruebas).
 
 ---
 
@@ -74,9 +74,9 @@ PostgreSQL. Dos tablas relacionadas por `abogado_id`.
 | Columna | Tipo | Nota |
 |---|---|---|
 | `id` | SERIAL PK | |
-| `titulo` | TEXT | |
-| `cliente` | TEXT | |
-| `archivo` | TEXT | Nombre del archivo almacenado |
+| `titulo` | TEXT NOT NULL | |
+| `cliente` | TEXT NOT NULL | |
+| `archivo` | TEXT NOT NULL | Nombre del archivo almacenado |
 | `fecha_vencimiento` | TEXT | Base de las alertas |
 | `notas` | TEXT | |
 | `comentario_abogado` | TEXT | Seguimiento del responsable |
@@ -91,6 +91,44 @@ Las tablas se crean con `CREATE TABLE IF NOT EXISTS` y las columnas nuevas se ag
 
 ---
 
+## Pruebas
+
+Siete pruebas automatizadas con `pytest` cubren lo que sostiene el sistema:
+
+| Prueba | Qué verifica |
+|---|---|
+| Sin sesión no se entra a rutas protegidas | `/jefe`, `/abogado` y `/superadmin` redirigen al login |
+| Contraseña incorrecta no abre sesión | Autenticación |
+| Login correcto guarda el rol | La sesión queda con el rol del usuario |
+| Un abogado no entra a rutas de jefe | El decorador `login_requerido` |
+| Un abogado sí entra a su propio panel | Contraparte de la anterior |
+| **Un abogado no abre el caso de otro abogado** | El filtro `WHERE id = %s AND abogado_id = %s` |
+| Un abogado no ve casos ajenos en su panel | El listado también filtra |
+
+La sexta es la central. Si alguien quita ese `AND` de la consulta, la prueba falla y lo señala antes de que llegue a producción.
+
+Requieren una base PostgreSQL accesible. Para levantar una desechable:
+
+```bash
+docker run -d --name pg-test \
+  -e POSTGRES_PASSWORD=test \
+  -e POSTGRES_DB=lexdoc_test \
+  -p 5433:5432 \
+  postgres:16-alpine
+```
+
+Ejecución:
+
+```bash
+DATABASE_URL="postgresql://postgres:test@localhost:5433/lexdoc_test" \
+SECRET_KEY="clave-de-prueba" \
+pytest -v
+```
+
+Las pruebas crean sus propios usuarios y casos, y los eliminan al terminar.
+
+---
+
 ## Stack
 
 | Componente | Tecnología |
@@ -100,6 +138,7 @@ Las tablas se crean con `CREATE TABLE IF NOT EXISTS` y las columnas nuevas se ag
 | Base de datos | PostgreSQL (`psycopg2`) |
 | Tareas programadas | APScheduler |
 | Correo | Resend |
+| Pruebas | pytest |
 | Servidor | Gunicorn |
 | Despliegue | Render |
 
@@ -134,12 +173,15 @@ Las tablas se crean solas en el primer arranque.
 ```
 app.py                  Rutas, lógica de negocio, esquema y alertas
 wsgi.py                 Punto de entrada para Gunicorn
+pytest.ini              Configuración de pytest
 requirements.txt
 templates/
   login.html
   superadmin/           Gestión de usuarios y perfil
   jefe/                 Asignación y edición de casos
   abogado/              Panel, carga y edición de casos propios
+tests/
+  test_lexdoc.py        Pruebas de acceso por roles y aislamiento de casos
 ```
 
 ---
