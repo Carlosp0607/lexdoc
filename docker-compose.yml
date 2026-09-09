@@ -1,0 +1,45 @@
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: lexdoc-db
+    restart: unless-stopped
+    # Valores fijos a proposito: este compose es solo para desarrollo local
+    # y no debe tomar credenciales del .env de produccion.
+    environment:
+      POSTGRES_DB: lexdoc
+      POSTGRES_USER: lexdoc
+      POSTGRES_PASSWORD: lexdoc
+    ports:
+      # 5433 en el equipo para no chocar con un PostgreSQL ya instalado
+      - "5433:5432"
+    volumes:
+      - datos_postgres:/var/lib/postgresql/data
+    healthcheck:
+      # La aplicacion solo arranca cuando PostgreSQL acepta conexiones
+      test: ["CMD-SHELL", "pg_isready -U lexdoc -d lexdoc"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+
+  app:
+    build: .
+    container_name: lexdoc-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # 'db' es el nombre del servicio: Docker lo resuelve como host
+      DATABASE_URL: postgresql://lexdoc:lexdoc@db:5432/lexdoc
+      SECRET_KEY: clave-solo-para-desarrollo-local
+      # El keep alive apunta al propio contenedor, nunca a produccion
+      APP_URL: http://127.0.0.1:5000
+      HORAS_RESET_DEMO: 12
+      RESEND_API_KEY: ""
+    ports:
+      - "5000:5000"
+
+volumes:
+  datos_postgres:
