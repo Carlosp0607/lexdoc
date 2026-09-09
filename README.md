@@ -4,7 +4,11 @@ Sistema de gestión y asignación de casos jurídicos para firmas de abogados. C
 
 Desarrollado bajo contrato de prestación de servicios para Turizo Lawyers Enterprise S.A. (enero 2024 – mayo 2025).
 
-**Demo pública:** [lexdoc.onrender.com](https://lexdoc.onrender.com)
+**Demo funcional:** [lexdoc.onrender.com](https://lexdoc.onrender.com)
+
+> Esta demo es una recreación independiente del sistema, poblada únicamente con
+> datos ficticios. No está conectada a la instancia de la firma ni contiene
+> información real de casos, clientes o abogados.
 
 ---
 
@@ -49,7 +53,7 @@ Existe una ruta `/reset-alertas` que devuelve el flag a cero, usada para reactiv
 
 ## Modo invitado
 
-La demo pública expone tres cuentas de prueba, una por rol, accesibles desde `/invitado/<rol>` sin necesidad de credenciales.
+La demo expone tres cuentas de prueba, una por rol, accesibles desde `/invitado/<rol>` sin necesidad de credenciales.
 
 Si la base de datos es nueva o quedó incompleta, la ruta crea la cuenta demo en el momento. Esto evita que el botón falle tras un redespliegue o una reinstalación de la base, que es lo que ocurre en el plan gratuito de Render.
 
@@ -139,12 +143,33 @@ Las pruebas crean sus propios usuarios y casos, y los eliminan al terminar.
 | Tareas programadas | APScheduler |
 | Correo | Resend |
 | Pruebas | pytest |
+| Contenedores | Docker y Docker Compose |
 | Servidor | Gunicorn |
 | Despliegue | Render |
 
 ---
 
-## Ejecución local
+## Ejecución con Docker
+
+La forma más rápida de levantar el proyecto completo, aplicación y base de datos, sin instalar Python ni PostgreSQL:
+
+```bash
+docker compose up
+```
+
+La aplicación queda en `http://localhost:5000`. El esquema y las cuentas de demostración se crean solos en el primer arranque.
+
+Para detener y borrar los datos:
+
+```bash
+docker compose down -v
+```
+
+Los valores de conexión están fijos en `docker-compose.yml` a propósito: ese archivo es solo para desarrollo local y no toca las credenciales de producción. La aplicación corre con un único worker de Gunicorn, porque el planificador de alertas no debe duplicarse entre procesos.
+
+## Ejecución manual
+
+Si prefiere ejecutar sin contenedores.
 
 ```bash
 git clone https://github.com/Carlosp0607/lexdoc.git
@@ -172,6 +197,8 @@ Las tablas se crean solas en el primer arranque.
 
 ```
 app.py                  Rutas, lógica de negocio, esquema y alertas
+Dockerfile              Imagen de la aplicación
+docker-compose.yml      Aplicación + PostgreSQL para desarrollo local
 wsgi.py                 Punto de entrada para Gunicorn
 pytest.ini              Configuración de pytest
 requirements.txt
