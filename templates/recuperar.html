@@ -1,0 +1,20 @@
+{% extends 'base_acceso.html' %}
+{#- Ruta: templates/recuperar.html -#}
+{% block titulo %}Recuperar contraseña{% endblock %}
+{% block subtitulo %}Recuperar contraseña{% endblock %}
+
+{% block contenido %}
+<p class="texto-acceso">Escribe el correo de tu cuenta. Si está registrado, te llegará un enlace para crear una contraseña nueva. El enlace vence en 60 minutos.</p>
+<form method="POST">
+    {{ ui.csrf() }}
+    <div class="campo">
+        <label for="email">Correo electrónico</label>
+        <input type="email" name="email" id="email" autocomplete="username" required autofocus>
+    </div>
+    <button type="submit" class="boton boton-principal boton-bloque">Enviar enlace</button>
+</form>
+{% endblock %}
+
+{% block despues %}
+<p class="pie-acceso"><a href="{{ url_for('login') }}">Volver a iniciar sesión</a></p>
+{% endblock %}
