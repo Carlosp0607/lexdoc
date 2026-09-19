@@ -1,276 +1,36 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LexDoc — Iniciar Sesión</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+{% extends 'base_acceso.html' %}
+{#- Ruta: templates/login.html -#}
+{% block titulo %}Iniciar sesión{% endblock %}
 
-        body {
-            font-family: 'Georgia', serif;
-            background: #0f1923;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding-top: 45px;
-        }
-
-        .container {
-            background: #1a2738;
-            border: 1px solid #ffffff;
-            border-radius: 8px;
-            padding: 50px 40px;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-        }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 35px;
-        }
-
-        .logo h1 {
-            color: #ffffff;
-            font-size: 2rem;
-            letter-spacing: 3px;
-        }
-
-        .logo p {
-            color: #8899aa;
-            font-size: 0.8rem;
-            letter-spacing: 2px;
-            margin-top: 5px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            color: #ffffff;
-            font-size: 0.75rem;
-            letter-spacing: 2px;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px 15px;
-            background: #0f1923;
-            border: 1px solid #2a3f55;
-            border-radius: 4px;
-            color: #ffffff;
-            font-size: 0.95rem;
-            transition: border-color 0.3s;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #ffffff;
-        }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            background: #ffffff;
-            color: #0f1923;
-            border: none;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-weight: bold;
-            letter-spacing: 2px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background 0.3s;
-        }
-
-        button:hover { background: #ffffff; }
-
-        .alert {
-            padding: 12px 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-        }
-
-        .alert-error {
-            background: #3d1515;
-            border: 1px solid #c0392b;
-            color: #e74c3c;
-        }
-
-        .alert-success {
-            background: #14301c;
-            border: 1px solid #27ae60;
-            color: #2ecc71;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            color: #445566;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-        }
-
-        .aviso-demo {
-            background: #c9a227;
-            border-radius: 6px;
-            padding: 18px 20px;
-            margin-bottom: 28px;
-            text-align: center;
-        }
-
-        .aviso-demo h2 {
-            color: #14202c;
-            font-size: 1.15rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-
-        .aviso-demo p {
-            color: #2a2205;
-            font-size: 0.92rem;
-            line-height: 1.55;
-            font-weight: bold;
-        }
-
-        .demo-section {
-            margin-bottom: 30px;
-            padding-bottom: 26px;
-            border-bottom: 1px solid #2a3f55;
-        }
-
-        .demo-label {
-            text-align: center;
-            color: #ffffff;
-            font-size: 1rem;
-            margin-bottom: 16px;
-            line-height: 1.5;
-        }
-
-        .demo-options {
-            display: flex;
-            gap: 10px;
-        }
-
-        .demo-btn {
-            flex: 1;
-            text-align: center;
-            padding: 16px 6px;
-            background: rgba(201, 162, 39, 0.12);
-            border: 2px solid #c9a227;
-            border-radius: 5px;
-            color: #ffffff;
-            text-decoration: none;
-            font-size: 1rem;
-            letter-spacing: 1px;
-            transition: background 0.3s, color 0.3s;
-        }
-
-        .demo-btn:hover {
-            background: #c9a227;
-            color: #14202c;
-        }
-
-        .demo-nota {
-            text-align: center;
-            color: #b9c6d3;
-            font-size: 0.85rem;
-            margin-top: 18px;
-            line-height: 1.6;
-        }
-
-        .separador-real {
-            text-align: center;
-            color: #6b7c8d;
-            font-size: 0.75rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 18px;
-        }
-
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="logo">
-            <h1>⚖ LEXDOC</h1>
-            <p>SISTEMA DE GESTIÓN LEGAL</p>
-        </div>
-
-        <div class="aviso-demo">
-            <h2>Version de demostracion</h2>
-            <p>Todos los casos, clientes y documentos que veras son
-            INVENTADOS. No corresponden a ninguna persona, empresa,
-            proceso judicial ni documento real.</p>
-        </div>
-
-        <div class="demo-section">
-            <p class="demo-label">Entra sin registrarte y prueba el sistema</p>
-            <div class="demo-options">
-                <a class="demo-btn" href="{{ url_for('entrar_invitado', rol='superadmin') }}">Admin</a>
-                <a class="demo-btn" href="{{ url_for('entrar_invitado', rol='jefe') }}">Jefe</a>
-                <a class="demo-btn" href="{{ url_for('entrar_invitado', rol='abogado') }}">Abogado</a>
-            </div>
-            <p class="demo-nota">Los datos cargados son de prueba. Cualquier
-            parecido con un caso o cliente real no existe: fueron creados
-            unicamente para mostrar como funciona el sistema.</p>
-        </div>
-
-        <p class="separador-real">O inicia sesion con tu cuenta</p>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <form method="POST">
-            <div class="form-group">
-                <label>Correo Electrónico</label>
-                <input type="email" name="email"
-                       placeholder="tu@lexdoc.com" required>
-            </div>
-            <div class="form-group">
-                <label>Contraseña</label>
-                <div style="position:relative;">
-                    <input type="password" name="password" id="pass1"
-                           placeholder="••••••••" required
-                           style="padding-right:45px;">
-                    <span onclick="togglePass('pass1', this)"
-                          style="position:absolute; right:14px; top:50%;
-                                 transform:translateY(-50%); cursor:pointer;
-                                 font-size:1.1rem; opacity:0.4; user-select:none;">👁️</span>
-                </div>
-            </div>
-            <button type="submit">INGRESAR</button>
-        </form>
-
-        <div class="footer">
-            <p>Acceso restringido — Solo personal autorizado</p>
-        </div>
+{% block antes %}
+{% if modo_demo %}
+<section class="demo-acceso">
+    <h2>Versión de demostración</h2>
+    <p>Todos los casos, clientes y documentos son inventados. Entra con un rol para recorrer el sistema.</p>
+    <div class="demo-roles">
+        <a class="boton" href="{{ url_for('entrar_invitado', rol='superadmin') }}">Administrador</a>
+        <a class="boton" href="{{ url_for('entrar_invitado', rol='jefe') }}">Jefe</a>
+        <a class="boton" href="{{ url_for('entrar_invitado', rol='abogado') }}">Abogado</a>
     </div>
-    <script>
-    function togglePass(id, icon) {
-        const input = document.getElementById(id);
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.style.opacity = '1';
-        } else {
-            input.type = 'password';
-            icon.style.opacity = '0.4';
-        }
-    }
-    </script>
-</body>
-</html>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block contenido %}
+<form method="POST">
+    {{ ui.csrf() }}
+    <div class="campo">
+        <label for="email">Correo electrónico</label>
+        <input type="email" name="email" id="email" autocomplete="username" required autofocus>
+    </div>
+    <div class="campo">
+        <label for="pass1">Contraseña</label>
+        {{ ui.clave('password', 'pass1') }}
+    </div>
+    <button type="submit" class="boton boton-principal boton-bloque">Iniciar sesión</button>
+</form>
+{% endblock %}
+
+{% block despues %}
+<p class="pie-acceso"><a href="{{ url_for('recuperar') }}">¿Olvidaste tu contraseña?</a></p>
+{% endblock %}
