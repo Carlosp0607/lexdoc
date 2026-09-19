@@ -1,0 +1,23 @@
+{% extends 'base_acceso.html' %}
+{#- Ruta: templates/restablecer.html -#}
+{% block titulo %}Nueva contraseña{% endblock %}
+{% block subtitulo %}Crear contraseña nueva{% endblock %}
+
+{% block contenido %}
+<form method="POST" action="{{ url_for('restablecer', token=token) }}">
+    {{ ui.csrf() }}
+    <div class="campo">
+        <label for="pass1">Contraseña nueva</label>
+        {{ ui.clave('password_nueva', 'pass1', 'Mínimo 8 caracteres', autocompletar='new-password') }}
+    </div>
+    <div class="campo">
+        <label for="pass2">Confirmar contraseña</label>
+        {{ ui.clave('password_confirmar', 'pass2', autocompletar='new-password') }}
+    </div>
+    <button type="submit" class="boton boton-principal boton-bloque">Guardar contraseña</button>
+</form>
+{% endblock %}
+
+{% block despues %}
+<p class="pie-acceso"><a href="{{ url_for('login') }}">Volver a iniciar sesión</a></p>
+{% endblock %}
