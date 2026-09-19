@@ -1,0 +1,35 @@
+{% extends 'base_app.html' %}
+{#- Ruta: templates/superadmin/auditoria.html -#}
+{% block titulo %}Auditoría{% endblock %}
+{% block encabezado %}Auditoría{% endblock %}
+{% block bajada %}<p class="bajada">Últimas 300 acciones registradas en el sistema.</p>{% endblock %}
+
+{% block contenido %}
+{%- set acciones = {
+    'login': 'Inició sesión', 'login_fallido': 'Intento fallido de inicio de sesión',
+    'crear_usuario': 'Creó un usuario', 'editar_usuario': 'Editó un usuario',
+    'eliminar_usuario': 'Eliminó un usuario', 'editar_perfil': 'Editó su perfil',
+    'cambiar_password': 'Cambió su contraseña', 'asignar_caso': 'Asignó un caso',
+    'editar_caso': 'Editó un caso', 'subir_caso': 'Subió un caso',
+    'caso_a_papelera': 'Envió un caso a la papelera', 'restaurar_caso': 'Restauró un caso',
+    'eliminar_caso_definitivo': 'Eliminó un caso definitivamente', 'descargar': 'Abrió un documento',
+    'reiniciar_alertas': 'Reinició las alertas', 'solicitar_recuperacion': 'Solicitó recuperar contraseña',
+    'restablecer_password': 'Restableció su contraseña'} -%}
+<div class="tabla-contenedor">
+    <table>
+        <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead>
+        <tbody>
+        {% for r in registros %}
+            <tr>
+                <td class="numero">{{ r['fecha']|fecha }} <span class="celda-secundaria">{{ r['fecha'].strftime('%H:%M:%S') }}</span></td>
+                <td>{{ r['usuario_nombre'] or 'Sin sesión' }}</td>
+                <td>{{ acciones.get(r['accion'], r['accion']) }}</td>
+                <td class="celda-texto">{{ r['detalle'] or '' }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="4" class="vacio">Todavía no hay acciones registradas.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
