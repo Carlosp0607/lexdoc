@@ -1,0 +1,55 @@
+{#- Ruta: templates/_componentes.html -#}
+{# Piezas reutilizables. Se importan con: {% import '_componentes.html' as ui with context %} #}
+
+{% macro mensajes() %}
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+        {% for categoria, mensaje in mensajes %}
+            <div class="mensaje mensaje-{{ categoria }}" role="alert">{{ mensaje }}</div>
+        {% endfor %}
+    {% endwith %}
+{% endmacro %}
+
+{% macro plazo(estado) %}
+    {%- set textos = {'vencido': 'Vencido', 'urgente': 'Urgente', 'proximo': 'Próximo', 'ok': 'Al día'} -%}
+    <span class="plazo plazo-{{ estado }}">{{ textos.get(estado, estado) }}</span>
+{%- endmacro %}
+
+{% macro dias(d, estado) %}
+    {%- set clase = 'dias-vencido' if d < 0 else ('dias-urgente' if estado == 'urgente' else '') -%}
+    <span class="dias {{ clase }}">
+    {%- if d < 0 %}Hace {{ -d }} {{ 'día' if d == -1 else 'días' }}
+    {%- elif d == 0 %}Vence hoy
+    {%- else %}{{ d }} {{ 'día' if d == 1 else 'días' }}{% endif -%}
+    </span>
+{%- endmacro %}
+
+{% macro estado_caso(e) %}
+    {%- set textos = {'pendiente': 'Pendiente', 'en_proceso': 'En proceso', 'listo': 'Listo', 'requiere_revision': 'Requiere revisión'} -%}
+    <span class="estado estado-{{ e }}">{{ textos.get(e, e) }}</span>
+{%- endmacro %}
+
+{% macro rol(r) %}
+    {%- set textos = {'superadmin': 'Administrador', 'jefe': 'Jefe de firma', 'abogado': 'Abogado'} -%}
+    {{ textos.get(r, r) }}
+{%- endmacro %}
+
+{% macro clave(nombre, id, placeholder='', requerido=true, autocompletar='current-password') %}
+    <div class="campo-clave">
+        <input type="password" name="{{ nombre }}" id="{{ id }}" placeholder="{{ placeholder }}"
+               autocomplete="{{ autocompletar }}" {% if requerido %}required{% endif %}>
+        <button type="button" class="mostrar-clave" data-toggle-pass="{{ id }}"
+                aria-controls="{{ id }}">Mostrar</button>
+    </div>
+{% endmacro %}
+
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro carga_archivo() %}
+    <div class="carga-archivo" data-abrir-archivo="archivo">
+        <input type="file" id="archivo" name="archivo" accept=".pdf,.doc,.docx" required
+               data-mostrar-archivo="nombre-archivo">
+        <strong>Seleccionar archivo</strong>
+        <p>PDF, DOC o DOCX. Máximo 10 MB.</p>
+        <div class="nombre-archivo" id="nombre-archivo"></div>
+    </div>
+{% endmacro %}
