@@ -1,61 +1,49 @@
 {% extends 'base_app.html' %}
-{#- Ruta: templates/abogado/dashboard.html -#}
-{% block titulo %}Mis casos{% endblock %}
-{% block encabezado %}Mis casos{% endblock %}
-{% block bajada %}<p class="bajada">Ordenados por vencimiento, el más cercano primero.</p>{% endblock %}
-{% block acciones %}<a class="boton boton-principal" href="{{ url_for('abogado_subir') }}">Subir documento</a>{% endblock %}
+{#- Ruta: templates/jefe/editar.html -#}
+{% set seccion = 'jefe_dashboard' %}
+{% block titulo %}Editar caso{% endblock %}
+{% block encabezado %}Editar caso{% endblock %}
+{% block bajada %}<p class="bajada">{{ doc['titulo'] }}</p>{% endblock %}
 
 {% block contenido %}
-{%- set cuenta = namespace(vencidos=0, urgentes=0, al_dia=0) -%}
-{%- for doc, estado, dias in documentos -%}
-    {%- if estado == 'vencido' %}{% set cuenta.vencidos = cuenta.vencidos + 1 %}
-    {%- elif estado == 'urgente' %}{% set cuenta.urgentes = cuenta.urgentes + 1 %}
-    {%- elif estado == 'ok' %}{% set cuenta.al_dia = cuenta.al_dia + 1 %}{% endif -%}
-{%- endfor -%}
-<div class="resumen">
-    <div><strong>{{ documentos|length }}</strong><span>Casos asignados</span></div>
-    <div class="cifra-urgente"><strong>{{ cuenta.urgentes }}</strong><span>Urgentes</span></div>
-    <div class="cifra-vencido"><strong>{{ cuenta.vencidos }}</strong><span>Vencidos</span></div>
-    <div><strong>{{ cuenta.al_dia }}</strong><span>Al día</span></div>
-</div>
-
-<div class="tabla-contenedor">
-    <table>
-        <thead>
-            <tr>
-                <th>Caso</th>
-                <th>Vencimiento</th>
-                <th>Plazo</th>
-                <th>Estado</th>
-                <th>Instrucciones del jefe</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for doc, estado, dias in documentos %}
-            <tr class="fila-{{ estado }}">
-                <td><span class="celda-principal">{{ doc['titulo'] }}</span>
-                    <span class="celda-secundaria">{{ doc['cliente'] }}</span></td>
-                <td><span class="numero">{{ doc['fecha_vencimiento']|fecha }}</span>
-                    <span class="celda-secundaria">{{ ui.dias(dias, estado) }}</span></td>
-                <td>{{ ui.plazo(estado) }}</td>
-                <td>{{ ui.estado_caso(doc['estado_caso']) }}</td>
-                <td class="celda-texto">
-                    {% if doc['notas'] %}<p title="{{ doc['notas'] }}">{{ doc['notas'] }}</p>
-                    {% else %}<span class="sin-dato">Sin instrucciones</span>{% endif %}
-                </td>
-                <td>
-                    <div class="acciones-fila">
-                        <a class="boton boton-chico" href="{{ url_for('descargar', nombre_archivo=doc['archivo']) }}" target="_blank" rel="noopener">Ver</a>
-                        <a class="boton boton-chico" href="{{ url_for('abogado_editar', id=doc['id']) }}">Actualizar</a>
-                        <a class="boton boton-chico" href="{{ url_for('descargar', nombre_archivo=doc['archivo']) }}" download>Descargar</a>
-                    </div>
-                </td>
-            </tr>
-        {% else %}
-            <tr><td colspan="6" class="vacio">No tienes casos asignados.</td></tr>
-        {% endfor %}
-        </tbody>
-    </table>
-</div>
+<form method="POST" class="panel formulario">
+    {{ ui.csrf() }}
+    {% if doc['comentario_abogado'] %}
+        <div class="nota">
+            <strong>Comentario del abogado</strong>
+            <p>{{ doc['comentario_abogado'] }}</p>
+        </div>
+    {% endif %}
+    <div class="campo">
+        <label for="abogado_id">Abogado responsable</label>
+        <select name="abogado_id" id="abogado_id">
+            {% for a in abogados %}
+                <option value="{{ a['id'] }}" {% if a['id'] == doc['abogado_id'] %}selected{% endif %}>{{ a['nombre'] }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="campos-dobles">
+        <div class="campo">
+            <label for="titulo">Título del caso</label>
+            <input type="text" name="titulo" id="titulo" value="{{ doc['titulo'] }}" required>
+        </div>
+        <div class="campo">
+            <label for="cliente">Cliente</label>
+            <input type="text" name="cliente" id="cliente" value="{{ doc['cliente'] }}" required>
+        </div>
+    </div>
+    <div class="campo">
+        <label for="fecha_vencimiento">Fecha de vencimiento</label>
+        <input type="date" name="fecha_vencimiento" id="fecha_vencimiento" value="{{ doc['fecha_vencimiento'] }}" required>
+        <p class="ayuda">Si cambias la fecha, las alertas por correo se reactivan.</p>
+    </div>
+    <div class="campo">
+        <label for="notas">Instrucciones para el abogado</label>
+        <textarea name="notas" id="notas">{{ doc['notas'] or '' }}</textarea>
+    </div>
+    <div class="botones-formulario">
+        <a class="boton" href="{{ url_for('jefe_dashboard') }}">Cancelar</a>
+        <button type="submit" class="boton boton-principal">Guardar cambios</button>
+    </div>
+</form>
 {% endblock %}
