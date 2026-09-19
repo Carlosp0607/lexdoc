@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{#- Ruta: templates/base_app.html -#}
+{% import '_componentes.html' as ui with context %}
+
+{% block cuerpo %}
+{%- set rol_actual = session.get('rol') -%}
+{%- if rol_actual == 'superadmin' -%}
+    {%- set menu = [('superadmin_dashboard', 'Panel general'), ('superadmin_usuarios', 'Usuarios'),
+                    ('superadmin_auditoria', 'Auditoría'), ('superadmin_perfil', 'Mi perfil')] -%}
+{%- elif rol_actual == 'jefe' -%}
+    {%- set menu = [('jefe_dashboard', 'Casos'), ('jefe_asignar', 'Asignar caso'), ('jefe_papelera', 'Papelera')] -%}
+{%- else -%}
+    {%- set menu = [('abogado_dashboard', 'Mis casos'), ('abogado_subir', 'Subir documento')] -%}
+{%- endif -%}
+{#- Cada pantalla puede declarar que opcion del menu queda marcada -#}
+{%- set marcado = seccion if seccion is defined else request.endpoint -%}
+<div class="app">
+    <aside class="lateral">
+        <a class="marca" href="{{ url_for('dashboard') }}">LexDoc<small>Gestión de casos</small></a>
+        <nav class="menu" aria-label="Menú principal">
+            {% for endpoint, texto in menu %}
+                <a href="{{ url_for(endpoint) }}" {% if marcado == endpoint %}class="activo" aria-current="page"{% endif %}>{{ texto }}</a>
+            {% endfor %}
+        </nav>
+        <div class="usuario-sesion">
+            <strong>{{ session.get('usuario_nombre', '') }}</strong>
+            <span>{{ ui.rol(rol_actual) }}</span>
+            <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+        </div>
+    </aside>
+
+    <main class="principal">
+        {% if modo_demo %}
+            <p class="aviso-demo">Demostración: todos los casos, clientes y documentos son ficticios.</p>
+        {% endif %}
+        <header class="encabezado">
+            <div>
+                <h1>{% block encabezado %}{% endblock %}</h1>
+                {% block bajada %}{% endblock %}
+            </div>
+            <div class="acciones-encabezado">{% block acciones %}{% endblock %}</div>
+        </header>
+        {{ ui.mensajes() }}
+        {% block contenido %}{% endblock %}
+    </main>
+</div>
+{% endblock %}
