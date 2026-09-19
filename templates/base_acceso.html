@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{#- Ruta: templates/base_acceso.html -#}
+{% import '_componentes.html' as ui with context %}
+
+{% block cuerpo %}
+<main class="acceso">
+    <div class="tarjeta-acceso">
+        <div class="marca-acceso">
+            <h1>LexDoc</h1>
+            <p>{% block subtitulo %}Gestión de casos jurídicos{% endblock %}</p>
+        </div>
+        {% block antes %}{% endblock %}
+        <div class="panel">
+            {{ ui.mensajes() }}
+            {% block contenido %}{% endblock %}
+        </div>
+        {% block despues %}{% endblock %}
+    </div>
+</main>
+{% endblock %}
