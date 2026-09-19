@@ -1,5 +1,7 @@
 # LexDoc
 
+![Pruebas](https://github.com/Carlosp0607/lexdoc/actions/workflows/pruebas.yml/badge.svg)
+
 Sistema de gestión y asignación de casos jurídicos para firmas de abogados. Control de acceso por roles, gestión documental y alertas automáticas por correo antes del vencimiento de un proceso.
 
 Desarrollado bajo contrato de prestación de servicios para Turizo Lawyers Enterprise S.A. (enero 2024 – mayo 2025).
@@ -183,7 +185,16 @@ Variables de entorno requeridas:
 DATABASE_URL=postgresql://usuario:clave@host:5432/basededatos
 SECRET_KEY=cadena_aleatoria_para_las_sesiones
 RESEND_API_KEY=clave_de_resend
+ADMIN_PASSWORD=clave_del_administrador
+MODO_DEMO=1
+APP_URL=https://tu-dominio
 ```
+
+`APP_URL` es la direccion publica que va en los enlaces de recuperacion de contraseña.
+
+`MODO_DEMO=1` (valor por defecto) activa el acceso de invitado, los datos ficticios, el reinicio periodico de la base y las descargas como PDF de prueba. Con `MODO_DEMO=0` todo eso se apaga: los archivos reales se guardan en PostgreSQL y se descargan tal cual.
+
+Sin `RESEND_API_KEY` las alertas por correo no se programan. Sin `ADMIN_PASSWORD` no se crea la cuenta de administrador real.
 
 ```bash
 python app.py
@@ -218,3 +229,36 @@ tests/
 En funcionamiento. Desplegado en Render con base de datos PostgreSQL gestionada.
 
 La demo corre en el plan gratuito, donde la instancia entra en reposo tras un periodo de inactividad. La primera petición puede tardar cerca de 50 segundos en responder.
+
+## Seguridad y operacion
+
+- Contraseñas con hash, token CSRF en todos los formularios, cookie de sesion `HttpOnly`, `SameSite` y `Secure`.
+- La sesion vence tras 30 minutos sin actividad.
+- Bloqueo de 15 minutos tras 5 intentos fallidos de inicio de sesion (registrado en PostgreSQL).
+- Politica CSP: solo se ejecuta JavaScript servido por la propia aplicacion (`static/js/lexdoc.js`).
+- Archivos validados por extension y por su firma real; guardados en PostgreSQL.
+- Registro de auditoria de cada accion (quien, que y cuando), visible para el superadmin.
+- Los casos eliminados van a una papelera y se pueden restaurar.
+- Recuperacion de contraseña por correo con enlace de un solo uso que vence en 60 minutos.
+- Alertas por correo cuando faltan 7 dias o menos y cuando el caso ya vencio.
+
+### Pruebas automaticas
+
+Cada push ejecuta la suite de pytest contra PostgreSQL en GitHub Actions (`.github/workflows/pruebas.yml`).
+
+### Copias de seguridad
+
+`.github/workflows/backup.yml` genera cada dia un volcado de la base, comprimido y cifrado con AES-256, y lo guarda 30 dias como artefacto de GitHub Actions. Sin la clave el archivo no se puede leer.
+
+Configuracion, en *Settings > Secrets and variables > Actions*:
+
+| Secreto | Valor |
+|---|---|
+| `BACKUP_DATABASE_URL` | URL externa de la base en Render |
+| `BACKUP_PASSPHRASE` | Clave para cifrar y descifrar |
+
+Restaurar un backup descargado:
+
+```bash
+gpg --decrypt lexdoc-AAAAMMDD-HHMM.sql.gz.gpg | gunzip | psql "URL_DE_LA_BASE_DESTINO"
+```
