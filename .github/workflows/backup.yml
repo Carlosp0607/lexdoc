@@ -1,0 +1,45 @@
+# Ruta: .github/workflows/backup.yml
+# Copia de seguridad diaria de la base de produccion.
+# El volcado se comprime y se CIFRA antes de guardarse: aunque el repositorio
+# sea publico, sin la clave nadie puede leerlo.
+#
+# Secretos requeridos (Settings > Secrets and variables > Actions):
+#   BACKUP_DATABASE_URL  URL externa de la base en Render
+#   BACKUP_PASSPHRASE    clave para cifrar y descifrar los backups
+name: Backup base de datos
+
+on:
+  schedule:
+    - cron: "0 7 * * *"   # 07:00 UTC = 2:00 a.m. hora Colombia
+  workflow_dispatch:       # tambien se puede correr a mano
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Volcar, comprimir y cifrar
+        env:
+          DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+          CLAVE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          if [ -z "$DATABASE_URL" ] || [ -z "$CLAVE" ]; then
+            echo "Faltan los secretos BACKUP_DATABASE_URL o BACKUP_PASSPHRASE"
+            exit 1
+          fi
+          ARCHIVO="lexdoc-$(date -u +%Y%m%d-%H%M).sql.gz.gpg"
+          # pg_dump de una version reciente puede leer servidores de versiones anteriores
+          docker run --rm -e DATABASE_URL postgres:18-alpine \
+            sh -c 'pg_dump --no-owner --no-privileges "$DATABASE_URL"' \
+            | gzip \
+            | gpg --batch --yes --symmetric --cipher-algo AES256 \
+                  --passphrase-file <(printf '%s' "$CLAVE") -o "$ARCHIVO"
+          test -s "$ARCHIVO"
+          echo "ARCHIVO=$ARCHIVO" >> "$GITHUB_ENV"
+
+      - name: Guardar backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARCHIVO }}
+          path: ${{ env.ARCHIVO }}
+          retention-days: 30
