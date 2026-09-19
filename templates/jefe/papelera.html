@@ -1,0 +1,38 @@
+{% extends 'base_app.html' %}
+{#- Ruta: templates/jefe/papelera.html -#}
+{% block titulo %}Papelera{% endblock %}
+{% block encabezado %}Papelera{% endblock %}
+{% block bajada %}<p class="bajada">Casos eliminados. Puedes restaurarlos o borrarlos para siempre.</p>{% endblock %}
+
+{% block contenido %}
+<div class="tabla-contenedor">
+    <table>
+        <thead><tr><th>Caso</th><th>Abogado</th><th>Eliminado</th><th></th></tr></thead>
+        <tbody>
+        {% for doc in documentos %}
+            <tr>
+                <td><span class="celda-principal">{{ doc['titulo'] }}</span>
+                    <span class="celda-secundaria">{{ doc['cliente'] }}</span></td>
+                <td class="sin-salto">{{ doc['abogado'] }}</td>
+                <td class="numero">{{ doc['eliminado_en']|fecha }}</td>
+                <td>
+                    <div class="acciones-fila">
+                        <form method="POST" action="{{ url_for('jefe_restaurar', id=doc['id']) }}">
+                            {{ ui.csrf() }}
+                            <button type="submit" class="boton boton-chico">Restaurar</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('jefe_eliminar_definitivo', id=doc['id']) }}"
+                              data-confirmar="Se borrará «{{ doc['titulo'] }}» y su archivo para siempre. ¿Continuar?">
+                            {{ ui.csrf() }}
+                            <button type="submit" class="boton boton-chico boton-peligro">Eliminar definitivamente</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="4" class="vacio">La papelera está vacía.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
